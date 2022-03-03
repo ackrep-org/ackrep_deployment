@@ -63,10 +63,21 @@ For the deployment to work it is expected to clone them separately one level up 
 
 #### Without Docker
 
-- clone *ackrep_core* and enter the repo directory
+**Setup:**
+
+- create a new empty directory
+- clone *ackrep_data*
+- clone *ackrep_core*, enter the repo directory, run the following commands from there.
 - `pip install -r requirements.txt`
+    - if building uwsgi fails → no problem (not needed for local testing)
+- `python3 manage.py makemigrations`
+- `python manage.py migrate --noinput --run-syncdb`
+- `python -c "from ackrep_core import core; core.load_repo_to_db('../ackrep_data')"`
 - `python3 manage.py runserver`
+
+**Test:**
 - visit <http://localhost:8000/> with your browser and check if the ackrep landing page is shown
+- visit <http://localhost:8000/entities>, search for key (UKJZI), click on "check this solution"; this should load some curves after about 3s.
 
 
 ### With Docker
