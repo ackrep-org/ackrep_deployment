@@ -8,7 +8,6 @@ FROM python:3.7-slim
 ARG APP_USER=appuser
 RUN groupadd -r ${APP_USER} && useradd --no-log-init -r -g ${APP_USER} ${APP_USER}
 
-
 # turn on root access inside the container (for debugging only) !!
 # RUN echo 'root:Docker!' | chpasswd
 
@@ -38,13 +37,18 @@ ADD ./ackrep_core/deployment_requirements.txt /deployment_requirements.txt
 RUN set -ex \
     && BUILD_DEPS=" \
     build-essential \
+    gfortran \
+    libblas-dev \
+    liblapack-dev \
     " \
     && apt-get update && apt-get install -y --no-install-recommends $BUILD_DEPS \
+    && pip3 install --upgrade pip \
     && pip install --no-cache-dir -r /requirements.txt \
     && pip install --no-cache-dir -r /deployment_requirements.txt \
     \
     && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false $BUILD_DEPS \
     && rm -rf /var/lib/apt/lists/*
+
 
 # this enables the usage of ipython inside the container (useful for debugging)
 RUN mkdir -p /home/$APP_USER
