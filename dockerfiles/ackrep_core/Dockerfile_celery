@@ -18,10 +18,12 @@ RUN set -ex \
 
 ADD ./ackrep_core/requirements.txt /requirements.txt
 ADD ./ackrep_core/requirements_celery.txt /requirements_celery.txt
+ADD ./ackrep_core/requirements_runner.txt /requirements_runner.txt
 
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 RUN pip install -r requirements_celery.txt
+RUN pip install -r requirements_runner.txt
 
 # copy core
 RUN mkdir -p /code/ackrep_core
