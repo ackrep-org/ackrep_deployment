@@ -5,3 +5,8 @@ sympy
 ipydex
 symbtools
 control
+
+# the following need additional system packages (see dockerfile): gfortran libblas-dev liblapack-dev
+slycot
+casadi
+
