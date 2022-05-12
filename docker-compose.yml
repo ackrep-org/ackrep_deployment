@@ -2,8 +2,11 @@ version: "3"
 
 services:
     ackrep-django:
+        container_name: ackrep-django
         environment:
-            DJANGO_MANAGEPY_MIGRATE: "on"
+            - DJANGO_MANAGEPY_MIGRATE=on
+            - CELERY_BROKER_URL=redis://redis:6379/0
+            - CELERY_RESULT_BACKEND=redis://redis:6379/0
         build:
             context: ..
             dockerfile: ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile
@@ -16,6 +19,7 @@ services:
             - 'traefik.http.routers.ackrep-django.tls.certresolver=lets-encrypt'
 
     traefik:
+        container_name: traefik
         image: traefik:2.1
         restart: always
         ports:
@@ -24,3 +28,36 @@ services:
         volumes:
             - ./traefik:/etc/traefik
             - /var/run/docker.sock:/var/run/docker.sock:ro
+
+    redis:
+        container_name: redis
+        image: redis:6.2-alpine
+
+    celery_worker:
+        container_name: celery_worker
+        build: 
+            context: ..
+            dockerfile: ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile_celery
+
+        command: celery -A ackrep_web worker --loglevel=INFO -c 4
+        environment:
+            - CELERY_BROKER_URL=redis://redis:6379/0
+            - CELERY_RESULT_BACKEND=redis://redis:6379/0
+        depends_on:
+            - ackrep-django
+            - redis
+
+    flower:
+        container_name: flower
+        build: 
+            context: ..
+            dockerfile: ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile_celery
+        command: celery -A ackrep_web flower --port=5555
+        ports:
+        - 5556:5555
+        environment:
+        - CELERY_BROKER_URL=redis://redis:6379/0
+        - CELERY_RESULT_BACKEND=redis://redis:6379/0
+        depends_on:
+        - ackrep-django
+        - celery_worker
