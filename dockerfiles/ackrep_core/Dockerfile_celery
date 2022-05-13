@@ -20,10 +20,20 @@ ADD ./ackrep_core/requirements.txt /requirements.txt
 ADD ./ackrep_core/requirements_celery.txt /requirements_celery.txt
 ADD ./ackrep_core/requirements_runner.txt /requirements_runner.txt
 
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
-RUN pip install -r requirements_celery.txt
-RUN pip install -r requirements_runner.txt
+RUN set -ex \
+    && BUILD_DEPS=" \
+    build-essential \
+    gfortran \
+    libblas-dev \
+    liblapack-dev \
+    " \
+    && apt-get update && apt-get install -y --no-install-recommends $BUILD_DEPS \
+    && pip install --no-cache-dir -r /requirements.txt \
+    && pip install --no-cache-dir -r /requirements_celery.txt \
+    && pip install --no-cache-dir -r /requirements_runner.txt \
+    \
+    && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false $BUILD_DEPS \
+    && rm -rf /var/lib/apt/lists/*
 
 # copy core
 RUN mkdir -p /code/ackrep_core
