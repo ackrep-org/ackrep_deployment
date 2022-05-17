@@ -40,12 +40,31 @@ services:
             dockerfile: ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile_celery
 
         command: celery -A ackrep_web worker --loglevel=INFO -c 4
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+            - ${PWD}/../:/ackrep
         environment:
             - USE_CELERY_BROKER_URL=True
             - USE_CELERY_RESULT_BACKEND=True
         depends_on:
             - ackrep-django
             - redis
+
+    default_environment:
+        container_name: default_environment
+        build:
+            context: ..
+            dockerfile: ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile_default_environment
+        volumes:
+            - ${PWD}/../:/ackrep
+
+    test_environment:
+        container_name: test_environment
+        build:
+            context: ..
+            dockerfile: ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile_test_environment
+        volumes:
+            - ${PWD}/../:/ackrep
 
     # flower:
     #     container_name: flower
@@ -61,3 +80,6 @@ services:
     #     depends_on:
     #       - ackrep-django
     #       - celery_worker
+
+
+# PWD=$(pwd) docker-compose up

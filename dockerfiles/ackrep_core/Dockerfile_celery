@@ -30,10 +30,31 @@ RUN set -ex \
     && apt-get update && apt-get install -y --no-install-recommends $BUILD_DEPS \
     && pip install --no-cache-dir -r /requirements.txt \
     && pip install --no-cache-dir -r /requirements_celery.txt \
-    && pip install --no-cache-dir -r /requirements_runner.txt \
+    # && pip install --no-cache-dir -r /requirements_runner.txt \
     \
     && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false $BUILD_DEPS \
     && rm -rf /var/lib/apt/lists/*
+
+# Install Docker inside container:
+# https://tutorials.releaseworksacademy.com/learn/the-simple-way-to-run-docker-in-docker-for-ci
+RUN apt-get update && \
+    apt-get -y install apt-transport-https \
+        ca-certificates \
+        curl \
+        gnupg2 \
+        software-properties-common && \
+    curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg > /tmp/dkey; apt-key add /tmp/dkey && \
+    add-apt-repository \
+    "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") \
+    $(lsb_release -cs) \
+    stable" && \
+    apt-get update && \
+    apt-get -y install docker-ce &&\
+    apt-get install docker-compose-plugin &&\
+    apt install docker-ce docker-ce-cli docker-ce-rootless-extras &&\
+    pip install docker-compose 
+    
+
 
 # copy core
 RUN mkdir -p /code/ackrep_core
@@ -45,6 +66,17 @@ RUN mkdir /code/ackrep_data
 ADD ./ackrep_data /code/ackrep_data
 RUN chown -R ${APP_USER}:${APP_USER} /code/ackrep_data
 
+ADD ./ackrep_deployment /code/ackrep_deployment
+
+# ! all of this did not work
+# RUN usermod -aG docker ${APP_USER}
+# RUN chgrp docker /lib/systemd/system/docker.socket
+# RUN chmod g+w /lib/systemd/system/docker.socket
+# RUN chown -R ${APP_USER}:${APP_USER} var/*
+# RUN chown ${APP_USER} ~/var/run/docker.sock
+# RUN docker run runner_default
+
+# WORKDIR /ackrep/ackrep_core
 WORKDIR /code/ackrep_core
 USER ${APP_USER}:${APP_USER}
 EXPOSE 8000

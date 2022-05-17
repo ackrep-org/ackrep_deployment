@@ -1,0 +1,69 @@
+FROM python:3.7-slim
+ENV PYTHONUNBUFFERED=1
+
+# Create a group and user to run our app
+ARG APP_USER=appuser
+RUN groupadd -r ${APP_USER} && useradd --no-log-init -r -g ${APP_USER} ${APP_USER}
+
+
+RUN set -ex \
+    && RUN_DEPS=" \
+    mime-support \
+    lsof \
+    git \
+    " \
+    && seq 1 8 | xargs -I{} mkdir -p /usr/share/man/man{} \
+    && apt-get update && apt-get install -y --no-install-recommends $RUN_DEPS \
+    && rm -rf /var/lib/apt/lists/*
+
+ADD ./ackrep_core/requirements.txt /requirements.txt
+ADD ./ackrep_core/requirements_runner.txt /requirements_runner.txt
+
+RUN set -ex \
+    && BUILD_DEPS=" \
+    build-essential \
+    gfortran \
+    libblas-dev \
+    liblapack-dev \
+    " \
+    && apt-get update && apt-get install -y --no-install-recommends $BUILD_DEPS \
+    && pip install --no-cache-dir -r /requirements.txt \
+    && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false $BUILD_DEPS \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN set -ex \
+    && BUILD_DEPS=" \
+    build-essential \
+    gfortran \
+    libblas-dev \
+    liblapack-dev \
+    " \
+    && apt-get update && apt-get install -y --no-install-recommends $BUILD_DEPS \
+    && pip install --no-cache-dir -r /requirements_runner.txt \
+    && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false $BUILD_DEPS \
+    && rm -rf /var/lib/apt/lists/*
+
+# copy core
+RUN mkdir -p /code/ackrep_core
+ADD ./ackrep_core /code/ackrep_core
+RUN chown -R ${APP_USER}:${APP_USER} /code
+
+# copy data
+RUN mkdir /code/ackrep_data
+ADD ./ackrep_data /code/ackrep_data
+RUN chown -R ${APP_USER}:${APP_USER} /code/ackrep_data
+
+# install ackrep
+WORKDIR /code/ackrep_core
+RUN pip install -e .
+
+# prepare volume directory
+# RUN mkdir /ackrep
+# RUN chown -R ${APP_USER}:${APP_USER} /ackrep
+# WORKDIR /ackrep/ackrep_core
+# RUN mkdir /ackrep_core
+# WORKDIR /ackrep/ackrep_core
+
+
+USER ${APP_USER}:${APP_USER}
+EXPOSE 8000
