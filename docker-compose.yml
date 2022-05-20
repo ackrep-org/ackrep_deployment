@@ -17,6 +17,8 @@ services:
             - 'traefik.http.routers.ackrep-django.rule=Host(`testing.ackrep.org`)'
             - 'traefik.http.routers.ackrep-django.tls=true'
             - 'traefik.http.routers.ackrep-django.tls.certresolver=lets-encrypt'
+        depends_on:
+            - traefik
 
     traefik:
         container_name: traefik
@@ -38,11 +40,9 @@ services:
         build: 
             context: ..
             dockerfile: ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile_celery
-
         command: celery -A ackrep_web worker --loglevel=INFO -c 4
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
-            - ${PWD}/../:/ackrep
         environment:
             - USE_CELERY_BROKER_URL=True
             - USE_CELERY_RESULT_BACKEND=True
@@ -56,7 +56,8 @@ services:
             context: ..
             dockerfile: ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile_default_environment
         volumes:
-            - ${PWD}/../:/ackrep
+            - ${PWD}/../ackrep_transfer:/ackrep_transfer
+        
 
     test_environment:
         container_name: test_environment
@@ -64,22 +65,4 @@ services:
             context: ..
             dockerfile: ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile_test_environment
         volumes:
-            - ${PWD}/../:/ackrep
-
-    # flower:
-    #     container_name: flower
-    #     build: 
-    #         context: ..
-    #         dockerfile: ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile_celery
-    #     command: celery -A ackrep_web flower --port=5555
-    #     ports:
-    #       - 5556:5555
-    #     environment:
-    #       - USE_CELERY_BROKER_URL=True
-    #       - USE_CELERY_RESULT_BACKEND=True
-    #     depends_on:
-    #       - ackrep-django
-    #       - celery_worker
-
-
-# PWD=$(pwd) docker-compose up
+            - ${PWD}/../ackrep_data:/code/ackrep_data

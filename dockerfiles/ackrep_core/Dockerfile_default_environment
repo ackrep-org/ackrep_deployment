@@ -43,13 +43,21 @@ RUN set -ex \
     && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false $BUILD_DEPS \
     && rm -rf /var/lib/apt/lists/*
 
+# install midnight commander
+RUN set -ex \
+    && apt-get update\
+    && apt-get install -y mc\
+    && mkdir -p /home/appuser\
+    && chown -R ${APP_USER}:${APP_USER} /home/appuser\
+    && alias mc='EDITOR=mcedit mc'
+
 # copy core
 RUN mkdir -p /code/ackrep_core
 ADD ./ackrep_core /code/ackrep_core
 RUN chown -R ${APP_USER}:${APP_USER} /code
 
 # copy data
-RUN mkdir /code/ackrep_data
+RUN mkdir -p /code/ackrep_data
 ADD ./ackrep_data /code/ackrep_data
 RUN chown -R ${APP_USER}:${APP_USER} /code/ackrep_data
 
@@ -64,6 +72,17 @@ RUN pip install -e .
 # RUN mkdir /ackrep_core
 # WORKDIR /ackrep/ackrep_core
 
+# prepare transfer folder
+RUN mkdir -p /ackrep_transfer
+RUN chown -R ${APP_USER}:${APP_USER} /ackrep_transfer
+
+ADD ./ackrep_deployment/dockerfiles/ackrep_core/additional_files /code/
 
 USER ${APP_USER}:${APP_USER}
 EXPOSE 8000
+
+# Uncomment after creating your docker-entrypoint.sh
+ENTRYPOINT ["/code/docker-entrypoint_adapt.sh"]
+
+# Start uWSGI
+CMD ["bash"]
