@@ -11,7 +11,9 @@ if platform.system() == "Linux":
     res = subprocess.run(["id"], text=True, capture_output=True)
     uid_host = res.stdout.split("uid")[1].split("=")[1].split("(")[0]
     gid_host = res.stdout.split("gid")[1].split("=")[1].split("(")[0]
-    res = subprocess.run(["sudo", "chown", f"{uid_host}:{gid_docker}", "/var/run/docker.sock"], text=True, capture_output=True)
+    res = subprocess.run(
+        ["sudo", "chown", f"{uid_host}:{gid_docker}", "/var/run/docker.sock"], text=True, capture_output=True
+    )
     assert res.returncode == 0, "Could not change permissions for docker socket."
 else:
     raise NotImplementedError

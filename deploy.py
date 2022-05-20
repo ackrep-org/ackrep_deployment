@@ -21,6 +21,7 @@ import deploymentutils as du
 import time
 
 from ipydex import IPS, activate_ips_on_exception
+
 activate_ips_on_exception()
 
 mod_path = os.path.dirname(os.path.abspath(__file__))
@@ -74,7 +75,7 @@ def main():
 
     # ------------------------------------------------------------------------------------------------------------------
     c.cprint("upload all deployment files", target_spec="remote")
-    source_path = general_base_dir+os.path.sep
+    source_path = general_base_dir + os.path.sep
     c.rsync_upload(source_path, settings["target_path"], target_spec="remote", printonly=False)
 
     # ------------------------------------------------------------------------------------------------------------------
