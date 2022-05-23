@@ -56,6 +56,16 @@ RUN mkdir -p /code/ackrep_core
 ADD ./ackrep_core /code/ackrep_core
 RUN chown -R ${APP_USER}:${APP_USER} /code
 
+# copy data ut
+RUN set -ex &&\
+    cd code &&\
+    git clone https://github.com/ackrep-org/ackrep_data.git &&\
+    mv ackrep_data ackrep_data_for_unittests && \
+    ls &&\
+    chown -R ${APP_USER}:${APP_USER} /code/ackrep_data_for_unittests &&\
+    cd ackrep_data_for_unittests &&\
+    git checkout for_unittests
+    
 # copy data
 RUN mkdir -p /code/ackrep_data
 ADD ./ackrep_data /code/ackrep_data
@@ -65,12 +75,13 @@ RUN chown -R ${APP_USER}:${APP_USER} /code/ackrep_data
 WORKDIR /code/ackrep_core
 RUN pip install -e .
 
-# prepare volume directory
-# RUN mkdir /ackrep
-# RUN chown -R ${APP_USER}:${APP_USER} /ackrep
-# WORKDIR /ackrep/ackrep_core
-# RUN mkdir /ackrep_core
-# WORKDIR /ackrep/ackrep_core
+# load the databases
+RUN set -ex \
+    && ackrep --bootstrap-db \
+    && ackrep --bootstrap-test-db \
+    && ackrep -l ../ackrep_data \
+    && python manage.py test --keepdb --nocapture ackrep_web.test.test_web:TestCases2.load_db
+RUN chown -R ${APP_USER}:${APP_USER} /code/ackrep_data_for_unittests
 
 # prepare transfer folder
 RUN mkdir -p /ackrep_transfer
