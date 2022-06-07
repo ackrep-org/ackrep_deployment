@@ -18,7 +18,6 @@ RUN set -ex \
 
 ADD ./ackrep_core/requirements.txt /requirements.txt
 ADD ./ackrep_core/requirements_celery.txt /requirements_celery.txt
-ADD ./ackrep_core/requirements_runner.txt /requirements_runner.txt
 
 RUN set -ex \
     && BUILD_DEPS=" \
@@ -30,7 +29,6 @@ RUN set -ex \
     && apt-get update && apt-get install -y --no-install-recommends $BUILD_DEPS \
     && pip install --no-cache-dir -r /requirements.txt \
     && pip install --no-cache-dir -r /requirements_celery.txt \
-    # && pip install --no-cache-dir -r /requirements_runner.txt \
     \
     && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false $BUILD_DEPS \
     && rm -rf /var/lib/apt/lists/*
@@ -63,20 +61,18 @@ RUN chown -R ${APP_USER}:${APP_USER} /code
 
 # copy data
 RUN mkdir /code/ackrep_data
-ADD ./ackrep_data /code/ackrep_data
+# data is added per volume
 RUN chown -R ${APP_USER}:${APP_USER} /code/ackrep_data
 
 ADD ./ackrep_deployment /code/ackrep_deployment
 
-# ! all of this did not work
-# RUN usermod -aG docker ${APP_USER}
-# RUN chgrp docker /lib/systemd/system/docker.socket
-# RUN chmod g+w /lib/systemd/system/docker.socket
-# RUN chown -R ${APP_USER}:${APP_USER} var/*
-# RUN chown ${APP_USER} ~/var/run/docker.sock
-# RUN docker run runner_default
+ADD ./ackrep_deployment/dockerfiles/ackrep_core/additional_files /code/
 
 # WORKDIR /ackrep/ackrep_core
 WORKDIR /code/ackrep_core
 USER ${APP_USER}:${APP_USER}
 EXPOSE 8000
+
+ENTRYPOINT ["/code/docker-entrypoint.sh"]
+
+CMD ["celery", "-A", "ackrep_web", "worker", "--loglevel=INFO", "-c", "4"]
