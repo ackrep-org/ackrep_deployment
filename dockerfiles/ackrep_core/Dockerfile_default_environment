@@ -69,6 +69,11 @@ RUN chown -R ${APP_USER}:${APP_USER} /code/ackrep_data_for_unittests
 WORKDIR /code/ackrep_core
 RUN pip install -e .
 
+# ensure that we have no legacy db file lurking around from local testing
+RUN rm -f db.sqlite3
+RUN rm -f db_for_unittests.sqlite3
+RUN rm -f /code/ackrep_core/media/*
+
 # prepare transfer folder
 RUN mkdir -p /ackrep_transfer
 RUN chown -R ${APP_USER}:${APP_USER} /ackrep_transfer

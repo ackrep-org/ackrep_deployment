@@ -70,6 +70,12 @@ ADD ./ackrep_deployment/dockerfiles/ackrep_core/additional_files /code/
 
 # WORKDIR /ackrep/ackrep_core
 WORKDIR /code/ackrep_core
+
+# ensure that we have no legacy db file lurking around from local testing
+RUN rm -f db.sqlite3
+RUN rm -f db_for_unittests.sqlite3
+RUN rm -f /code/ackrep_core/media/*
+
 USER ${APP_USER}:${APP_USER}
 EXPOSE 8000
 
