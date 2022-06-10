@@ -1,7 +1,0 @@
-numpy
-scipy
-matplotlib
-sympy
-ipydex
-symbtools
-control

@@ -63,7 +63,6 @@ services:
         container_name: default_environment
         environment:
             - DJANGO_MANAGEPY_MIGRATE=on
-            - DATA_REPO_HOST_ADDRESS=$DATA_REPO_HOST_ADDRESS
         build:
             context: ..
             dockerfile: ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile_default_environment
