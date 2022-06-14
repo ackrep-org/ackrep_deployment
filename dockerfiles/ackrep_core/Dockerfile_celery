@@ -67,6 +67,7 @@ RUN chown -R ${APP_USER}:${APP_USER} /code/ackrep_data
 ADD ./ackrep_deployment /code/ackrep_deployment
 
 ADD ./ackrep_deployment/dockerfiles/ackrep_core/additional_files /code/
+ADD ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile_celery /code/
 
 # WORKDIR /ackrep/ackrep_core
 WORKDIR /code/ackrep_core

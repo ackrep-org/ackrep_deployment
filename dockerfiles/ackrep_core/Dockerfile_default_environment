@@ -79,6 +79,7 @@ RUN mkdir -p /ackrep_transfer
 RUN chown -R ${APP_USER}:${APP_USER} /ackrep_transfer
 
 ADD ./ackrep_deployment/dockerfiles/ackrep_core/additional_files /code/
+ADD ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile_default_environment /code/
 
 USER ${APP_USER}:${APP_USER}
 EXPOSE 8000

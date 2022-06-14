@@ -4,6 +4,7 @@ import argparse
 
 from ipydex import IPS
 from sympy import re
+import time
 
 """
 run 
@@ -34,20 +35,31 @@ message = args.message
 #! this assumes a lot about naming conventions
 root_path = os.path.dirname(__file__)
 dockerfile_path = os.path.join(root_path, "dockerfiles/ackrep_core", f"Dockerfile_{image}")
-content = f'LABEL org.opencontainers.image.description "{message}"'
+commit_message = f"Version: {version}. {message}"
+content = f'LABEL org.opencontainers.image.description "{commit_message}"'
 
-dockerfile = open(dockerfile_path, "r")
-lines = dockerfile.readlines()
-dockerfile.close()
+with open(dockerfile_path, "r") as dockerfile:
+    lines = dockerfile.readlines()
 
-dockerfile = open(dockerfile_path, "a")
-dockerfile.write("\n" + content)
-dockerfile.close()
+with open(dockerfile_path, "a") as dockerfile:
+    dockerfile.write("\n" + content)
 
+start = time.time()
 # rebuild image to incorporate description
 print("Rebuilding Image")
 res = subprocess.run(["docker-compose", "build", image])
 assert res.returncode == 0
+
+if time.time() - start > 3:
+    print("Building took longer than expected.\
+        Are you sure you were testing with the correct/ most recent image version?")
+    q = input("Continue? (y|N)")
+    if q != "y":
+        # reset dockerfile
+        with open(dockerfile_path, "w") as dockerfile:
+            dockerfile.writelines(lines)
+        exit("Aborted.")
+    
 
 # get image id
 prefix = "ackrep_deployment_"
@@ -83,9 +95,9 @@ res = subprocess.run(cmd)
 assert res.returncode == 0
 
 # reset dockerfile
-dockerfile = open(dockerfile_path, "w")
-dockerfile.writelines(lines)
-dockerfile.close()
+with open(dockerfile_path, "w") as dockerfile:
+    dockerfile.writelines(lines)
+
 
 print("\nDone")
 url = "https://github.com/orgs/ackrep-org/packages/container/package/" + image
