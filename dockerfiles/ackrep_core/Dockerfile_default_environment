@@ -43,6 +43,11 @@ RUN set -ex \
     && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false $BUILD_DEPS \
     && rm -rf /var/lib/apt/lists/*
 
+# qt stuff for pyinduct
+RUN set -ex \
+    && apt-get update \
+    && apt-get install libgl1 -y 
+
 # install midnight commander
 RUN set -ex \
     && apt-get update\

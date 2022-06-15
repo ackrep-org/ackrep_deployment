@@ -3,8 +3,8 @@ import subprocess
 import argparse
 
 from ipydex import IPS
-from sympy import re
 import time
+import git
 
 """
 run 
@@ -35,7 +35,11 @@ message = args.message
 #! this assumes a lot about naming conventions
 root_path = os.path.dirname(__file__)
 dockerfile_path = os.path.join(root_path, "dockerfiles/ackrep_core", f"Dockerfile_{image}")
-commit_message = f"Version: {version}. {message}"
+core_version = git.Git("../ackrep_core").log(-1).replace("\n", ", ")
+commit_message = f"Environment Version: {version}. | " + \
+    f"Core Version: {core_version} | " + \
+    f"Message: {message}"
+# description supports markdown syntax
 content = f'LABEL org.opencontainers.image.description "{commit_message}"'
 
 with open(dockerfile_path, "r") as dockerfile:
