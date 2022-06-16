@@ -1,0 +1,85 @@
+FROM python:3.8-slim
+ENV PYTHONUNBUFFERED=1
+
+# Create a group and user to run our app
+ARG APP_USER=appuser
+RUN groupadd -r ${APP_USER} && useradd --no-log-init -r -g ${APP_USER} ${APP_USER}
+
+
+RUN set -ex \
+    && RUN_DEPS=" \
+    mime-support \
+    lsof \
+    git \
+    " \
+    && seq 1 8 | xargs -I{} mkdir -p /usr/share/man/man{} \
+    && apt-get update && apt-get install -y --no-install-recommends $RUN_DEPS \
+    && rm -rf /var/lib/apt/lists/*
+
+ADD ./ackrep_core/requirements.txt /requirements.txt
+ADD ./ackrep_core/requirements_celery.txt /requirements_celery.txt
+
+RUN set -ex \
+    && BUILD_DEPS=" \
+    build-essential \
+    gfortran \
+    libblas-dev \
+    liblapack-dev \
+    " \
+    && apt-get update && apt-get install -y --no-install-recommends $BUILD_DEPS \
+    && pip install --no-cache-dir -r /requirements.txt \
+    && pip install --no-cache-dir -r /requirements_celery.txt \
+    \
+    && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false $BUILD_DEPS \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Docker inside container:
+# https://tutorials.releaseworksacademy.com/learn/the-simple-way-to-run-docker-in-docker-for-ci
+RUN apt-get update && \
+    apt-get -y install apt-transport-https \
+        ca-certificates \
+        curl \
+        gnupg2 \
+        software-properties-common && \
+    curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg > /tmp/dkey; apt-key add /tmp/dkey && \
+    add-apt-repository \
+    "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") \
+    $(lsb_release -cs) \
+    stable" && \
+    apt-get update && \
+    apt-get -y install docker-ce &&\
+    apt-get install docker-compose-plugin &&\
+    apt install docker-ce docker-ce-cli docker-ce-rootless-extras &&\
+    pip install docker-compose 
+    
+
+
+# copy core
+RUN mkdir -p /code/ackrep_core
+ADD ./ackrep_core /code/ackrep_core
+RUN chown -R ${APP_USER}:${APP_USER} /code
+
+# copy data
+RUN mkdir /code/ackrep_data
+# data is added per volume
+RUN chown -R ${APP_USER}:${APP_USER} /code/ackrep_data
+
+ADD ./ackrep_deployment /code/ackrep_deployment
+
+ADD ./ackrep_deployment/dockerfiles/ackrep_core/additional_files /code/
+ADD ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile_celery /code/
+
+# WORKDIR /ackrep/ackrep_core
+WORKDIR /code/ackrep_core
+
+# ensure that we have no legacy db file lurking around from local testing
+RUN rm -f db.sqlite3
+RUN rm -f db_for_unittests.sqlite3
+RUN rm -f /code/ackrep_core/media/*
+
+USER ${APP_USER}:${APP_USER}
+EXPOSE 8000
+
+ENTRYPOINT ["/code/docker-entrypoint.sh"]
+
+CMD ["celery", "-A", "ackrep_web", "worker", "--loglevel=INFO", "-c", "4"]

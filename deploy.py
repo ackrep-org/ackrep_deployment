@@ -12,6 +12,7 @@ for remote deployment
 - restart remote services
 """
 
+from math import fabs
 import sys
 import os
 import argparse
@@ -20,6 +21,7 @@ import deploymentutils as du
 import time
 
 from ipydex import IPS, activate_ips_on_exception
+
 activate_ips_on_exception()
 
 mod_path = os.path.dirname(os.path.abspath(__file__))
@@ -69,11 +71,11 @@ def main():
     # 1/0
 
     c.chdir(target_deployment_path)
-    c.run(f"sudo docker-compose stop ackrep-django", target_spec="both", printonly=args.no_docker)
+    c.run(f"docker-compose stop ackrep-django", target_spec="both", printonly=args.no_docker)
 
     # ------------------------------------------------------------------------------------------------------------------
     c.cprint("upload all deployment files", target_spec="remote")
-    source_path = general_base_dir+os.path.sep
+    source_path = general_base_dir + os.path.sep
     c.rsync_upload(source_path, settings["target_path"], target_spec="remote", printonly=False)
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -87,7 +89,7 @@ def main():
         c.run(f"docker-compose up -d ackrep-django", target_spec="remote", printonly=args.no_docker)
         # c.run(f"docker-compose up -d --build", target_spec="remote", printonly=args.no_docker)
     else:
-        c.run(f"sudo docker-compose up -d --build ackrep-django", target_spec="local", printonly=args.no_docker)
+        c.run(f"docker-compose up -d --build ackrep-django", target_spec="local", printonly=args.no_docker)
 
 
 def find_and_render_templates(settings_dict):

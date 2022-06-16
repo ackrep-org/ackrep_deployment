@@ -27,7 +27,8 @@ RUN set -ex \
 
 # Copy in your requirements file
 ADD ./ackrep_core/requirements.txt /requirements.txt
-ADD ./ackrep_core/deployment_requirements.txt /deployment_requirements.txt
+ADD ./ackrep_core/requirements_deployment.txt /requirements_deployment.txt
+ADD ./ackrep_core/requirements_celery.txt /requirements_celery.txt
 
 # OR, if you're using a directory for your requirements, copy everything (comment out the above and uncomment this if so):
 # ADD requirements /requirements
@@ -44,7 +45,8 @@ RUN set -ex \
     && apt-get update && apt-get install -y --no-install-recommends $BUILD_DEPS \
     && pip3 install --upgrade pip \
     && pip install --no-cache-dir -r /requirements.txt \
-    && pip install --no-cache-dir -r /deployment_requirements.txt \
+    && pip install --no-cache-dir -r /requirements_deployment.txt \
+    && pip install --no-cache-dir -r /requirements_celery.txt \
     \
     && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false $BUILD_DEPS \
     && rm -rf /var/lib/apt/lists/*
@@ -65,17 +67,11 @@ RUN rm -f db.sqlite3
 RUN rm -f /code/ackrep_core/media/*
 
 RUN mkdir /code/ackrep_data
-ADD ./ackrep_data /code/ackrep_data
+# data is added per volume
 RUN chown -R ${APP_USER}:${APP_USER} /code/ackrep_data
 
 ADD ./ackrep_deployment/dockerfiles/ackrep_core/additional_files /code/
-
-
-# add the most important python packages for the demo-instance
-#  TODO: !! This should be handled via Environment specifications:
-
-ADD ./ackrep_deployment/dockerfiles/ackrep_data/additional_files /code/
-RUN pip install --no-cache-dir -r /code/tmp_requirements.txt
+ADD ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile /code/
 
 
 # uWSGI will listen on this port

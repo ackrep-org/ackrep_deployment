@@ -1,0 +1,89 @@
+FROM python:3.7-slim
+ENV PYTHONUNBUFFERED=1
+
+# Create a group and user to run our app
+ARG APP_USER=appuser
+RUN groupadd -r ${APP_USER} && useradd --no-log-init -r -g ${APP_USER} ${APP_USER}
+
+
+RUN set -ex \
+    && RUN_DEPS=" \
+    mime-support \
+    lsof \
+    git \
+    " \
+    && seq 1 8 | xargs -I{} mkdir -p /usr/share/man/man{} \
+    && apt-get update && apt-get install -y --no-install-recommends $RUN_DEPS \
+    && rm -rf /var/lib/apt/lists/*
+
+ADD ./ackrep_core/requirements.txt /requirements.txt
+ADD ./ackrep_core/requirements_runner.txt /requirements_runner.txt
+
+RUN set -ex \
+    && BUILD_DEPS=" \
+    build-essential \
+    gfortran \
+    libblas-dev \
+    liblapack-dev \
+    " \
+    && apt-get update && apt-get install -y --no-install-recommends $BUILD_DEPS \
+    && pip install --no-cache-dir -r /requirements.txt \
+    && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false $BUILD_DEPS \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN set -ex \
+    && BUILD_DEPS=" \
+    build-essential \
+    gfortran \
+    libblas-dev \
+    liblapack-dev \
+    " \
+    && apt-get update && apt-get install -y --no-install-recommends $BUILD_DEPS \
+    && pip install --no-cache-dir -r /requirements_runner.txt \
+    && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false $BUILD_DEPS \
+    && rm -rf /var/lib/apt/lists/*
+
+# install midnight commander
+RUN set -ex \
+    && apt-get update\
+    && apt-get install -y mc\
+    && mkdir -p /home/appuser\
+    && chown -R ${APP_USER}:${APP_USER} /home/appuser\
+    && alias mc='EDITOR=mcedit mc'
+
+# copy core
+RUN mkdir -p /code/ackrep_core
+ADD ./ackrep_core /code/ackrep_core
+RUN chown -R ${APP_USER}:${APP_USER} /code
+
+# copy data
+RUN mkdir -p /code/ackrep_data
+# data is added per volume
+RUN chown -R ${APP_USER}:${APP_USER} /code/ackrep_data
+
+RUN mkdir -p /code/ackrep_data_for_unittests
+# data is added per volume
+RUN chown -R ${APP_USER}:${APP_USER} /code/ackrep_data_for_unittests
+
+# install ackrep
+WORKDIR /code/ackrep_core
+RUN pip install -e .
+
+# ensure that we have no legacy db file lurking around from local testing
+RUN rm -f db.sqlite3
+RUN rm -f db_for_unittests.sqlite3
+RUN rm -f /code/ackrep_core/media/*
+
+# prepare transfer folder
+RUN mkdir -p /ackrep_transfer
+RUN chown -R ${APP_USER}:${APP_USER} /ackrep_transfer
+
+ADD ./ackrep_deployment/dockerfiles/ackrep_core/additional_files /code/
+
+USER ${APP_USER}:${APP_USER}
+EXPOSE 8000
+
+
+ENTRYPOINT ["/code/docker-entrypoint_env.sh"]
+
+CMD ["bash"]
