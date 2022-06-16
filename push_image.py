@@ -36,9 +36,11 @@ message = args.message
 root_path = os.path.dirname(__file__)
 dockerfile_path = os.path.join(root_path, "dockerfiles/ackrep_core", f"Dockerfile_{image}")
 core_version = git.Git("../ackrep_core").log(-1).replace("\n", ", ")
+deployment_version = git.Git("../ackrep_deployment").log(-1).replace("\n", ", ")
 commit_message = f"Environment Version: {version}. | " + \
-    f"Core Version: {core_version} | " + \
-    f"Message: {message}"
+    f" Core Version: {core_version} | " + \
+    f" Deployment Version: {deployment_version} | " + \
+    f" Message: {message}"
 # description supports markdown syntax
 content = f'LABEL org.opencontainers.image.description "{commit_message}"'
 
