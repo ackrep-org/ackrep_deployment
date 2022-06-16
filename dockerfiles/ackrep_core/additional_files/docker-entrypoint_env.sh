@@ -1,5 +1,12 @@
 #!/bin/bash
 set -e
+# Update the UID
+echo newid $HOST_UID
+echo uid $UID
+id 
+ls -n ../
+chown -R $HOST_UID:$HOST_UID /code
+ls -n ../
 
 # create an empty database
 python manage.py migrate --noinput --run-syncdb >/dev/null

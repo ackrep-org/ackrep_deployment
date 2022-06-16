@@ -30,6 +30,14 @@ assert len(version.split(".")) == 3, "version tag not in the form of major.minor
 assert args.message is not None, "no message specified"
 message = args.message
 
+cmd = ["docker", "pull", f"ghcr.io/ackrep-org/{image}:{version}"]
+res = subprocess.run(cmd, text=True, capture_output=True)
+print(res.stdout,"\n", res.stderr)
+if "Pulling from" in res.stdout:
+    print("An image with this tag already exists. Pushing will overwrite the existing image.")
+    q = input("Continue? (y|N)")
+    if q != "y":
+        exit("Aborted.")
 
 # manipulate dockerfile to write version description
 #! this assumes a lot about naming conventions

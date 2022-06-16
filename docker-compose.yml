@@ -8,6 +8,7 @@ services:
             - USE_CELERY_BROKER_URL=True
             - USE_CELERY_RESULT_BACKEND=True
             - DATA_REPO_HOST_ADDRESS=$DATA_REPO_HOST_ADDRESS
+            - HOST_UID=$HOST_UID
         build:
             context: ..
             dockerfile: ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile
@@ -49,6 +50,7 @@ services:
             - USE_CELERY_BROKER_URL=True
             - USE_CELERY_RESULT_BACKEND=True
             - DATA_REPO_HOST_ADDRESS=$DATA_REPO_HOST_ADDRESS
+            - HOST_UID=$HOST_UID
         build: 
             context: ..
             dockerfile: ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile_celery
