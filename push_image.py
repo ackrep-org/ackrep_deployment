@@ -52,19 +52,24 @@ commit_message = f"Environment Version: {version}. | " + \
 # description supports markdown syntax
 content = f'LABEL org.opencontainers.image.description "{commit_message}"'
 
+print(f"Label of Dockerfile_{image} will look like this:\n{commit_message}")
+q = input("Continue? (y|N)")
+if q != "y":
+    exit("Aborted.")
+
 with open(dockerfile_path, "r") as dockerfile:
     lines = dockerfile.readlines()
 
 with open(dockerfile_path, "a") as dockerfile:
     dockerfile.write("\n" + content)
 
-start = time.time()
 # rebuild image to incorporate description
+start = time.time()
 print("Rebuilding Image")
 res = subprocess.run(["docker-compose", "build", image])
 assert res.returncode == 0
 
-if time.time() - start > 3:
+if time.time() - start > 5:
     print("Building took longer than expected.\
         Are you sure you were testing with the correct/ most recent image version?")
     q = input("Continue? (y|N)")

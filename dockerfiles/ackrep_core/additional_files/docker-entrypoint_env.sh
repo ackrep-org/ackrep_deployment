@@ -3,10 +3,10 @@ set -e
 # Update the UID
 echo newid $HOST_UID
 echo uid $UID
-id 
-ls -n ../
+# id 
+# ls -n ../
 chown -R $HOST_UID:$HOST_UID /code
-ls -n ../
+# ls -n ../
 
 # create an empty database
 python manage.py migrate --noinput --run-syncdb >/dev/null
@@ -22,5 +22,9 @@ then
 else
     echo "no db path specified, no db loaded"
 fi
+
+useradd --uid $HOST_UID $HOST_NAME
+su $HOST_NAME
+id
 
 exec "$@"
