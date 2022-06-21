@@ -1,5 +1,7 @@
 # ACKRep Deployment Utils
 
+**Note:** The full documentation is available online at <https://ackrep-doc.readthedocs.io/en/latest/index.html>.
+
 ## General Information
 
 This repository contains the code that runs on <demo.ackrep.org>. It should also provide a starting point to deploy an own instance.
