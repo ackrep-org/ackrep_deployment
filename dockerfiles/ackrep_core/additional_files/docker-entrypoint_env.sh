@@ -1,12 +1,12 @@
 #!/bin/bash
 set -e
-# Update the UID
-echo newid $HOST_UID
-echo uid $UID
-# id 
-# ls -n ../
-chown -R $HOST_UID:$HOST_UID /code
-# ls -n ../
+
+if [[ -z "$HOST_UID" ]]; then
+    echo "ERROR: please set HOST_UID" >&2
+    exit 1
+fi
+
+
 
 # create an empty database
 python manage.py migrate --noinput --run-syncdb >/dev/null
@@ -23,8 +23,18 @@ else
     echo "no db path specified, no db loaded"
 fi
 
-useradd --uid $HOST_UID $HOST_NAME
-su $HOST_NAME
-id
+# Update the UID
+# echo newid $HOST_UID
+# echo uid $UID
+
+chown -R $HOST_UID:$HOST_UID /code
+chown -R $HOST_UID:$HOST_UID /home
+
+
+# see https://www.joyfulbikeshedding.com/blog/2021-03-15-docker-and-the-host-filesystem-owner-matching-problem.html
+usermod --uid "$HOST_UID" appuser
+groupmod --gid "$HOST_UID" appuser
+# open a 'good' shell, see https://unix.stackexchange.com/a/307581
+su -s /bin/bash appuser
 
 exec "$@"

@@ -1,7 +1,7 @@
 import subprocess
 import sys, os
 import platform
-import getpass
+
 
 # get uid inside container
 cmd = ["docker", "run", "ackrep_deployment_celery_worker", "id", "-u"]
@@ -11,8 +11,6 @@ uid_docker = res.stdout.replace("\n", "")
 # get uid of host
 host_uid = os.getuid()
 print("host uid:", host_uid)
-host_name = getpass.getuser()
-print("host_name:", host_name)
 
 root_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -53,7 +51,7 @@ print("data repo on host:", data_repo_host_address)
 # run docker containers
 # subprocess needs an executable first
 # extra quotation marks to cover whitespaces
-cmd = f"/bin/sh -c 'DATA_REPO_HOST_ADDRESS={data_repo_host_address} HOST_UID={host_uid} HOST_NAME={host_name} docker-compose up'"
+cmd = f"/bin/sh -c 'DATA_REPO_HOST_ADDRESS={data_repo_host_address} HOST_UID={host_uid} docker-compose up'"
 # default_env container is supposed to exit with code 1
 try:
     res = subprocess.run([cmd], shell=True)
