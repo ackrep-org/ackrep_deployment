@@ -32,7 +32,7 @@ message = args.message
 
 cmd = ["docker", "pull", f"ghcr.io/ackrep-org/{image}:{version}"]
 res = subprocess.run(cmd, text=True, capture_output=True)
-print(res.stdout,"\n", res.stderr)
+# print(res.stdout,"\n", res.stderr)
 if "Pulling from" in res.stdout:
     print("An image with this tag already exists. Pushing will overwrite the existing image.")
     q = input("Continue? (y|N)")
@@ -45,7 +45,7 @@ root_path = os.path.dirname(__file__)
 dockerfile_path = os.path.join(root_path, "dockerfiles/ackrep_core", f"Dockerfile_{image}")
 core_version = git.Git("../ackrep_core").log(-1).replace("\n", ", ")
 deployment_version = git.Git("../ackrep_deployment").log(-1).replace("\n", ", ")
-commit_message = f"Environment Version: {version}. | " + \
+commit_message = f"{image}:{version}. | " + \
     f" Core Version: {core_version} | " + \
     f" Deployment Version: {deployment_version} | " + \
     f" Message: {message}"
