@@ -6,6 +6,14 @@ if [[ -z "$HOST_UID" ]]; then
     exit 1
 fi
 
+# Update the UID
+chown -R $HOST_UID:$HOST_UID /code
+chown -R $HOST_UID:$HOST_UID /home
+
+
+# see https://www.joyfulbikeshedding.com/blog/2021-03-15-docker-and-the-host-filesystem-owner-matching-problem.html
+usermod --uid "$HOST_UID" appuser
+groupmod --gid "$HOST_UID" appuser
 
 
 # create an empty database
@@ -15,25 +23,17 @@ if [[ $ACKREP_DATABASE_PATH == *"unittest"* ]]
 then
     echo "loading unittest repo"
     python -c "from ackrep_core import core; core.load_repo_to_db('/code/ackrep_data_for_unittests')" #>/dev/null
+    chown $HOST_UID:$HOST_UID /code/ackrep_core/db_for_unittests.sqlite3
 elif [[ $ACKREP_DATABASE_PATH == *"db"* ]]
 then
     # echo "loading data repo"
     python -c "from ackrep_core import core; core.load_repo_to_db('/code/ackrep_data')" >/dev/null
+    chown $HOST_UID:$HOST_UID /code/ackrep_core/db.sqlite3
 else
     echo "no db path specified, no db loaded"
 fi
 
-# Update the UID
-# echo newid $HOST_UID
-# echo uid $UID
 
-chown -R $HOST_UID:$HOST_UID /code
-chown -R $HOST_UID:$HOST_UID /home
-
-
-# see https://www.joyfulbikeshedding.com/blog/2021-03-15-docker-and-the-host-filesystem-owner-matching-problem.html
-usermod --uid "$HOST_UID" appuser
-groupmod --gid "$HOST_UID" appuser
 # open a 'good' shell, see https://unix.stackexchange.com/a/307581
 su -s /bin/bash appuser
 
