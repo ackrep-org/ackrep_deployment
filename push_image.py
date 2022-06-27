@@ -52,7 +52,7 @@ commit_message = f"{image}:{version}. | " + \
 # description supports markdown syntax
 content = f'LABEL org.opencontainers.image.description "{commit_message}"'
 
-print(f"Label of Dockerfile_{image} will look like this:\n{commit_message}")
+print(f"Label of Dockerfile_{image} will look like this:\n\n{commit_message}\n")
 q = input("Continue? (y|N)")
 if q != "y":
     exit("Aborted.")

@@ -75,8 +75,6 @@ RUN rm -f db.sqlite3
 RUN rm -f db_for_unittests.sqlite3
 RUN rm -f /code/ackrep_core/media/*
 
-# prepare transfer folder
-RUN mkdir -p /ackrep_transfer
 
 ADD ./ackrep_deployment/dockerfiles/ackrep_core/additional_files /code/
 ADD ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile_default_environment /code/

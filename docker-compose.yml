@@ -68,8 +68,7 @@ services:
         build:
             context: ..
             dockerfile: ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile_default_environment
-        volumes:
-            - ${PWD}/../ackrep_transfer:/ackrep_transfer
+        # volumes:
             # data repo is mounted by core.py on startup
 
 
