@@ -9,6 +9,7 @@ services:
             - USE_CELERY_RESULT_BACKEND=True
             - DATA_REPO_HOST_ADDRESS=$DATA_REPO_HOST_ADDRESS
             - HOST_UID=$HOST_UID
+            - DJANGO_DEVMODE=True
         build:
             context: ..
             dockerfile: ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile
@@ -16,14 +17,17 @@ services:
             - "8000:8000"
         labels:
             - 'traefik.enable=true'
-            - 'traefik.http.routers.ackrep-django.rule=Host(`testing.ackrep.org`)'
-            - 'traefik.http.routers.ackrep-django.tls=true'
-            - 'traefik.http.routers.ackrep-django.tls.certresolver=lets-encrypt'
+            - 'traefik.http.routers.ackrep-django.rule=Host(`ackrep.localhost`)'
+            # - 'traefik.http.routers.ackrep-django.rule=Host(`testing10.ackrep.org`)'
+            # - 'traefik.http.routers.ackrep-django.tls=true'
+            # - 'traefik.http.routers.ackrep-django.tls.certresolver=lets-encrypt'
         volumes:
-            - $DATA_REPO_HOST_ADDRESS:/code/ackrep_data
-        depends_on:
-            - traefik
-            - celery_worker
+            #- $DATA_REPO_HOST_ADDRESS:/code/ackrep_data
+            # this is relative to this file not to build-context
+            - ../ackrep_data:/code/ackrep_data
+
+        #depends_on:
+            #- traefik
 
 
     traefik:
@@ -37,45 +41,3 @@ services:
             - ./traefik:/etc/traefik
             - /var/run/docker.sock:/var/run/docker.sock:ro
 
-
-    redis:
-        container_name: redis
-        image: redis:6.2-alpine
-
-
-    celery_worker:
-        container_name: celery_worker
-        environment:
-            - DJANGO_MANAGEPY_MIGRATE=on
-            - USE_CELERY_BROKER_URL=True
-            - USE_CELERY_RESULT_BACKEND=True
-            - DATA_REPO_HOST_ADDRESS=$DATA_REPO_HOST_ADDRESS
-            - HOST_UID=$HOST_UID
-        build: 
-            context: ..
-            dockerfile: ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile_celery
-        volumes:
-            - /var/run/docker.sock:/var/run/docker.sock
-            - $DATA_REPO_HOST_ADDRESS:/code/ackrep_data
-        depends_on:
-            - redis
-
-
-    default_environment:
-        container_name: default_environment
-        environment:
-            - DJANGO_MANAGEPY_MIGRATE=on
-        build:
-            context: ..
-            dockerfile: ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile_default_environment
-        # volumes:
-            # data repo is mounted by core.py on startup
-
-
-    default_conda_environment:
-        container_name: default_conda_environment
-        build:
-            context: ..
-            dockerfile: ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile_default_conda_environment
-        # volumes:
-            # data repo is mounted by core.py on startup

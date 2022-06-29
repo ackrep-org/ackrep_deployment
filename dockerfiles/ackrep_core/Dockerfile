@@ -83,6 +83,17 @@ ENV DJANGO_SETTINGS_MODULE=ackrep_core_django_settings.settings
 # Call collectstatic (customize the following line with the minimal environment variables needed for manage.py to run):
 RUN DATABASE_URL='' python manage.py collectstatic --noinput
 
+# the actuality of this file has to be ensured by deploy.py (or manually in the local case)
+ADD ./config.ini /code/config.ini
+
+# for debugging only
+RUN set -ex \
+    && RUN_DEPS=" \
+    mc \
+    " \
+    && apt-get update && apt-get install -y --no-install-recommends $RUN_DEPS \
+    && rm -rf /var/lib/apt/lists/*
+
 # Tell uWSGI where to find your wsgi file (change this):
 ENV UWSGI_WSGI_FILE=ackrep_core_django_settings/wsgi.py
 
