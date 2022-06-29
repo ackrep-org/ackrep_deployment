@@ -72,10 +72,10 @@ services:
             # data repo is mounted by core.py on startup
 
 
-    test_environment:
-        container_name: test_environment
+    default_conda_environment:
+        container_name: default_conda_environment
         build:
             context: ..
-            dockerfile: ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile_test_environment
+            dockerfile: ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile_default_conda_environment
         # volumes:
             # data repo is mounted by core.py on startup

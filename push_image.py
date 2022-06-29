@@ -43,6 +43,7 @@ if "Pulling from" in res.stdout:
 #! this assumes a lot about naming conventions
 root_path = os.path.dirname(__file__)
 dockerfile_path = os.path.join(root_path, "dockerfiles/ackrep_core", f"Dockerfile_{image}")
+assert os.path.isfile(dockerfile_path), f"Invalid image Name: {image}"
 core_version = git.Git("../ackrep_core").log(-1).replace("\n", ", ")
 deployment_version = git.Git("../ackrep_deployment").log(-1).replace("\n", ", ")
 commit_message = f"{image}:{version}. | " + \

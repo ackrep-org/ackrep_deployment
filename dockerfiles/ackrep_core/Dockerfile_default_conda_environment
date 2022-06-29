@@ -1,0 +1,71 @@
+FROM continuumio/miniconda3
+ENV PYTHONUNBUFFERED=1
+
+# Create a group and user to run our app
+ARG PYTHON_VERSION=3.8
+ARG APP_USER=appuser
+RUN groupadd -r ${APP_USER} && useradd --no-log-init -r -g ${APP_USER} ${APP_USER}
+
+RUN set -ex \
+    && conda init bash \
+    && . /root/.bashrc \
+    && conda update conda \
+    && conda install python=${PYTHON_VERSION} 
+
+ENV PATH=/opt/conda/envs/ackrep_env/bin:$PATH
+
+ADD ./ackrep_core/requirements.txt /requirements.txt
+ADD ./ackrep_core/requirements_default_environment_pip.txt /requirements_default_environment_pip.txt
+ADD ./ackrep_core/requirements_default_environment_conda.txt /requirements_default_environment_conda.txt
+
+RUN set -ex \ 
+    && pip install -r requirements.txt \
+    && pip install -r requirements_default_environment_pip.txt \
+    && conda install -c conda-forge --file requirements_default_environment_conda.txt
+
+RUN conda install jupyter -y --quiet
+
+
+# qt stuff for pyinduct
+RUN set -ex \
+    && apt-get update \
+    && apt-get install libgl1 -y 
+
+# install midnight commander
+RUN set -ex \
+    && apt-get update\
+    && apt-get install -y mc\
+    && mkdir -p /home/appuser\
+    && alias mc='EDITOR=mcedit mc'
+
+# copy core
+RUN mkdir -p /code/ackrep_core
+ADD ./ackrep_core /code/ackrep_core
+
+# copy data
+RUN mkdir -p /code/ackrep_data
+# data is added per volume
+
+RUN mkdir -p /code/ackrep_data_for_unittests
+# data is added per volume
+
+# install ackrep
+WORKDIR /code/ackrep_core
+RUN pip install -e .
+
+# ensure that we have no legacy db file lurking around from local testing
+RUN rm -f db.sqlite3
+RUN rm -f db_for_unittests.sqlite3
+RUN rm -f /code/ackrep_core/media/*
+
+
+ADD ./ackrep_deployment/dockerfiles/ackrep_core/additional_files /code/
+ADD ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile_default_environment /code/
+
+USER root
+EXPOSE 8000
+EXPOSE 8888
+
+ENTRYPOINT ["/code/docker-entrypoint_conda_env.sh"]
+
+CMD ["bash"]
