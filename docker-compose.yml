@@ -17,17 +17,17 @@ services:
             - "8000:8000"
         labels:
             - 'traefik.enable=true'
-            - 'traefik.http.routers.ackrep-django.rule=Host(`ackrep.localhost`)'
-            # - 'traefik.http.routers.ackrep-django.rule=Host(`testing10.ackrep.org`)'
-            # - 'traefik.http.routers.ackrep-django.tls=true'
-            # - 'traefik.http.routers.ackrep-django.tls.certresolver=lets-encrypt'
+            #- 'traefik.http.routers.ackrep-django.rule=Host(`ackrep.localhost`)'
+            - 'traefik.http.routers.ackrep-django.rule=Host(`testing2.ackrep.org`)'
+#             - 'traefik.http.routers.ackrep-django.tls=true'
+#             - 'traefik.http.routers.ackrep-django.tls.certresolver=lets-encrypt'
         volumes:
             #- $DATA_REPO_HOST_ADDRESS:/code/ackrep_data
             # this is relative to this file not to build-context
             - ../ackrep_data:/code/ackrep_data
 
-        #depends_on:
-            #- traefik
+        depends_on:
+            - traefik
 
 
     traefik:

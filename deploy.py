@@ -36,7 +36,6 @@ def main():
     du.argparser.add_argument("configfile", help="path to .ini-file for configuration")
     du.argparser.add_argument("-nd", "--no-docker", help="omit docker comands", action="store_true")
 
-    args = argparser.parse_args()
     args = du.parse_args()
 
     # limit=0 -> specify path explicitly
@@ -65,6 +64,7 @@ def main():
     # this is the dir where subdirs ackrep_core, ackrep_data, etc live
     target_base_path = config('target_path')
     target_deployment_path = f"{target_base_path}/ackrep_deployment"
+    target_core_path = f"{target_base_path}/ackrep_core"
 
     # this assumes that ackrep_deployment/docker-compose.yml is already on the server
     c.chdir(target_deployment_path)
@@ -86,6 +86,15 @@ def main():
     c.rsync_upload(config.path, f"{target_base_path}/config.ini", target_spec="remote")
 
     # ------------------------------------------------------------------------------------------------------------------
+    c.cprint("log the deployment date to file", target_spec="both")
+    c.chdir(target_core_path)
+
+
+    pycmd = "import time; print(time.strftime(r'%Y-%m-%d %H:%M:%S'))"
+    c.run(f'''python3 -c "{pycmd}" > deployment_date.txt''', target_spec="remote")
+
+
+    # ------------------------------------------------------------------------------------------------------------------
     c.cprint("rebuild and restart the services", target_spec="both")
 
     c.chdir(target_deployment_path)
@@ -95,10 +104,5 @@ def main():
 
 
 if __name__ == "__main__":
-    # main()
+    main()
 
-
-
-
-
-    IPS()
