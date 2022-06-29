@@ -1,15 +1,17 @@
 """
 This script does the following:
-- load specified settings
-- find all templates (of config files)
-- render these templates
-
-
-for remote deployment
-
+- load specified config*.ini
 - stop remote services
 - upload all files to the server
+- create `deployment_date.txt`
 - restart remote services
+
+
+unlock sshkey for 10 minutes
+eval $(ssh-agent); ssh-add -t 10m
+
+working command:
+python deploy.py remote ../ackrep_deployment_config/config_testing2.ini
 """
 
 from math import fabs
@@ -25,11 +27,6 @@ from ipydex import IPS, activate_ips_on_exception
 activate_ips_on_exception()
 
 
-# once there was a use case for importing core during deployment ...
-#mod_path = os.path.dirname(os.path.abspath(__file__))
-#core_mod_path = os.path.join(mod_path, "..", "ackrep_core")
-#sys.path.insert(0, core_mod_path)
-#from ackrep_core import core
 
 
 def main():
@@ -42,8 +39,6 @@ def main():
     config = du.get_nearest_config(args.configfile)
 
     # ------------------------------------------------------------------------------------------------------------------
-    print("find and render templates")
-    # obsolete?
 
     local_deployment_files_base_dir = du.get_dir_of_this_file()
     general_base_dir = os.path.split(local_deployment_files_base_dir)[0]

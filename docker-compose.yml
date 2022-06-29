@@ -19,8 +19,8 @@ services:
             - 'traefik.enable=true'
             #- 'traefik.http.routers.ackrep-django.rule=Host(`ackrep.localhost`)'
             - 'traefik.http.routers.ackrep-django.rule=Host(`testing2.ackrep.org`)'
-#             - 'traefik.http.routers.ackrep-django.tls=true'
-#             - 'traefik.http.routers.ackrep-django.tls.certresolver=lets-encrypt'
+            - 'traefik.http.routers.ackrep-django.tls=true'
+            - 'traefik.http.routers.ackrep-django.tls.certresolver=lets-encrypt'
         volumes:
             #- $DATA_REPO_HOST_ADDRESS:/code/ackrep_data
             # this is relative to this file not to build-context
