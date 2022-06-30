@@ -33,7 +33,6 @@ else
     echo "no db path specified, no db loaded"
 fi
 
-jupyter notebook --notebook-dir=/code/ackrep_data --ip='*' --port=8888 --no-browser --allow-root
 
 # open a 'good' shell, see https://unix.stackexchange.com/a/307581
 su -s /bin/bash appuser

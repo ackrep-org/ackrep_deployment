@@ -25,6 +25,9 @@ RUN set -ex \
 
 RUN conda install jupyter -y --quiet
 
+RUN conda update libstdcxx-ng
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/conda/lib
+RUN . /root/.bashrc
 
 # qt stuff for pyinduct
 RUN set -ex \
@@ -61,6 +64,8 @@ RUN rm -f /code/ackrep_core/media/*
 
 ADD ./ackrep_deployment/dockerfiles/ackrep_core/additional_files /code/
 ADD ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile_default_environment /code/
+
+
 
 USER root
 EXPOSE 8000
