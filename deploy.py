@@ -32,11 +32,13 @@ activate_ips_on_exception()
 def main():
     du.argparser.add_argument("configfile", help="path to .ini-file for configuration")
     du.argparser.add_argument("-nd", "--no-docker", help="omit docker comands", action="store_true")
+    du.argparser.add_argument("--devserver", help="run development server instead", action="store_true")
 
     args = du.parse_args()
 
     # limit=0 -> specify path explicitly
     config = du.get_nearest_config(args.configfile)
+    run_devserver = args.devserver
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -63,7 +65,10 @@ def main():
 
     # this assumes that ackrep_deployment/docker-compose.yml is already on the server
     c.chdir(target_deployment_path)
-    c.run(f"docker-compose stop ackrep-django", target_spec="both", printonly=args.no_docker)
+    res = c.run(f"docker ps -f name=ackrep-django -q", target_spec="both", printonly=args.no_docker)
+    if len(res.stdout) > 0:    
+        ids = res.stdout.replace("\n", " ") 
+        c.run(f"docker stop {ids}", target_spec="both", printonly=args.no_docker)
 
     # ------------------------------------------------------------------------------------------------------------------
     # the following command assumes that all local repo-directories are in a desired state
@@ -94,10 +99,16 @@ def main():
 
     c.chdir(target_deployment_path)
     c.run(f"docker-compose build ackrep-django", target_spec="remote", printonly=args.no_docker)
-    c.run(f"docker-compose up -d ackrep-django", target_spec="remote", printonly=args.no_docker)
+    if run_devserver:
+        print("now run:\ndocker-compose run -p 8000:8000 ackrep-django python3 manage.py runserver 0.0.0.0:8000\nin ssh shell")
+    else:
+        c.run(f"docker-compose up -d ackrep-django", target_spec="remote", printonly=args.no_docker)
 
 
 
 if __name__ == "__main__":
     main()
 
+"""
+python deploy.py remote ../ackrep_deployment_config/config_testing2.ini
+"""
