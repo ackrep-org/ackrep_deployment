@@ -20,6 +20,10 @@ RUN set -ex \
     mime-support \
     lsof \
     git \
+    curl \
+    mc \
+    sudo \
+    wget \
     " \
     && seq 1 8 | xargs -I{} mkdir -p /usr/share/man/man{} \
     && apt-get update && apt-get install -y --no-install-recommends $RUN_DEPS \
@@ -70,6 +74,11 @@ RUN mkdir /code/ackrep_data
 # data is added per volume
 RUN chown -R ${APP_USER}:${APP_USER} /code/ackrep_data
 
+RUN set -ex \
+    && cd /code \
+    && git clone https://github.com/ackrep-org/ackrep_ci_results.git
+RUN chown -R ${APP_USER}:${APP_USER} /code/ackrep_ci_results
+
 ADD ./ackrep_deployment/dockerfiles/ackrep_core/additional_files /code/
 ADD ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile /code/
 
@@ -79,6 +88,9 @@ EXPOSE 8000
 
 # Add any static environment variables needed by Django or your settings file here:
 ENV DJANGO_SETTINGS_MODULE=ackrep_core_django_settings.settings
+
+# the actuality of this file has to be ensured by deploy.py (or manually in the local case)
+ADD ./config.ini /code/config.ini
 
 # Call collectstatic (customize the following line with the minimal environment variables needed for manage.py to run):
 RUN DATABASE_URL='' python manage.py collectstatic --noinput
