@@ -18,16 +18,12 @@ ADD ./ackrep_core/requirements.txt /requirements.txt
 ADD ./ackrep_core/requirements_default_environment_pip.txt /requirements_default_environment_pip.txt
 ADD ./ackrep_core/requirements_default_environment_conda.txt /requirements_default_environment_conda.txt
 
-RUN set -ex \ 
-    && pip install -r requirements.txt \
-    && pip install -r requirements_default_environment_pip.txt \
-    && conda install -c conda-forge --file requirements_default_environment_conda.txt
+RUN pip install -r requirements.txt 
+RUN pip install -r requirements_default_environment_pip.txt 
+RUN conda install -c conda-forge --file requirements_default_environment_conda.txt
 
 RUN conda install jupyter -y --quiet
 
-RUN conda update libstdcxx-ng
-ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/conda/lib
-RUN . /root/.bashrc
 
 # qt stuff for pyinduct
 RUN set -ex \
