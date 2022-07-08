@@ -70,8 +70,8 @@ res = subprocess.run(["docker-compose", "build", image])
 assert res.returncode == 0
 
 if time.time() - start > 5:
-    print("Building took longer than expected.\
-        Are you sure you were testing with the correct/ most recent image version?")
+    print("Building took longer than expected\n."\
+        + "Are you sure you were testing with the correct/ most recent image version?")
     q = input("Continue? (y|N)")
     if q != "y":
         # reset dockerfile

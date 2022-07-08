@@ -63,7 +63,7 @@ RUN rm -f /code/ackrep_core/media/*
 
 
 ADD ./ackrep_deployment/dockerfiles/ackrep_core/additional_files /code/
-ADD ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile_default_environment /code/
+ADD ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile_default_conda_environment /code/
 
 
 
