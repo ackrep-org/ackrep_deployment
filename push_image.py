@@ -50,7 +50,6 @@ commit_message = f"{image}:{version}. | " + \
     f" Core Version: {core_version} | " + \
     f" Deployment Version: {deployment_version} | " + \
     f" Message: {message}"
-# description supports markdown syntax
 content = f'LABEL org.opencontainers.image.description "{commit_message}"'
 
 print(f"Label of Dockerfile_{image} will look like this:\n\n{commit_message}\n")

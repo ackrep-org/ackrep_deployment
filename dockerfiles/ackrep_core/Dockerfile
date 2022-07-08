@@ -79,6 +79,11 @@ RUN set -ex \
     && git clone https://github.com/ackrep-org/ackrep_ci_results.git
 RUN chown -R ${APP_USER}:${APP_USER} /code/ackrep_ci_results
 
+RUN set -ex \
+    && cd /code \
+    && git clone https://github.com/ackrep-org/ackrep_fallback_binaries.git
+RUN chown -R ${APP_USER}:${APP_USER} /code/ackrep_fallback_binaries
+
 ADD ./ackrep_deployment/dockerfiles/ackrep_core/additional_files /code/
 ADD ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile /code/
 

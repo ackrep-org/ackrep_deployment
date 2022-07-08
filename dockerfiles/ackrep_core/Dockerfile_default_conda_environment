@@ -6,6 +6,13 @@ ARG PYTHON_VERSION=3.8
 ARG APP_USER=appuser
 RUN groupadd -r ${APP_USER} && useradd --no-log-init -r -g ${APP_USER} ${APP_USER}
 
+# install midnight commander
+RUN set -ex \
+    && apt-get update\
+    && apt-get install -y mc\
+    && mkdir -p /home/appuser\
+    && alias mc='EDITOR=mcedit mc'
+
 RUN set -ex \
     && conda init bash \
     && . /root/.bashrc \
@@ -22,20 +29,17 @@ RUN pip install -r requirements.txt
 RUN pip install -r requirements_default_environment_pip.txt 
 RUN conda install -c conda-forge --file requirements_default_environment_conda.txt
 
-RUN conda install jupyter -y --quiet
+RUN conda install jupyter -y
 
+# conda installs scipy from forge, which uses a newer version of GLIBCXX than available
+# and crashing scipy for most entities
+RUN pip uninstall scipy -y
+RUN pip install --no-cache-dir scipy
 
 # qt stuff for pyinduct
 RUN set -ex \
     && apt-get update \
     && apt-get install libgl1 -y 
-
-# install midnight commander
-RUN set -ex \
-    && apt-get update\
-    && apt-get install -y mc\
-    && mkdir -p /home/appuser\
-    && alias mc='EDITOR=mcedit mc'
 
 # copy core
 RUN mkdir -p /code/ackrep_core
