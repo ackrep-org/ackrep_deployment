@@ -13,7 +13,7 @@ from the command line
 """
 
 argparser = argparse.ArgumentParser()
-argparser.add_argument("-i", "--image", help="image name", metavar="image", default="default_environment")
+argparser.add_argument("-i", "--image", help="image name", metavar="image")
 argparser.add_argument("-v", "--version", help="version tag", metavar="version")
 argparser.add_argument("-m", "--message", help="description of version", metavar="message")
 
