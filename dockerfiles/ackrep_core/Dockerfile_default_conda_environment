@@ -31,11 +31,6 @@ RUN conda install -c conda-forge --file requirements_default_environment_conda.t
 
 RUN conda install jupyter -y
 
-# conda installs scipy from forge, which uses a newer version of GLIBCXX than available
-# and crashing scipy for most entities
-RUN pip uninstall scipy -y
-RUN pip install --no-cache-dir scipy
-
 # qt stuff for pyinduct
 RUN set -ex \
     && apt-get update \
@@ -65,7 +60,9 @@ RUN rm -f /code/ackrep_core/media/*
 ADD ./ackrep_deployment/dockerfiles/ackrep_core/additional_files /code/
 ADD ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile_default_conda_environment /code/
 
-
+# conda installs scipy from forge, which uses a newer version of GLIBCXX than available
+# and crashing scipy for most entities
+RUN pip install -U --no-cache-dir scipy
 
 USER root
 EXPOSE 8000
