@@ -32,7 +32,6 @@ RUN set -ex \
 # Copy in your requirements file
 ADD ./ackrep_core/requirements.txt /requirements.txt
 ADD ./ackrep_core/requirements_deployment.txt /requirements_deployment.txt
-ADD ./ackrep_core/requirements_celery.txt /requirements_celery.txt
 
 # OR, if you're using a directory for your requirements, copy everything (comment out the above and uncomment this if so):
 # ADD requirements /requirements
@@ -50,7 +49,6 @@ RUN set -ex \
     && pip3 install --upgrade pip \
     && pip install --no-cache-dir -r /requirements.txt \
     && pip install --no-cache-dir -r /requirements_deployment.txt \
-    && pip install --no-cache-dir -r /requirements_celery.txt \
     \
     && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false $BUILD_DEPS \
     && rm -rf /var/lib/apt/lists/*

@@ -5,7 +5,6 @@ services:
         container_name: ackrep-django
         environment:
             - DJANGO_MANAGEPY_MIGRATE=on
-            - HOST_UID=$HOST_UID
             - DJANGO_DEVMODE=True
         build:
             context: ..
