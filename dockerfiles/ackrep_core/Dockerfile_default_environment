@@ -53,22 +53,18 @@ RUN set -ex \
     && apt-get update\
     && apt-get install -y mc\
     && mkdir -p /home/appuser\
-    && chown -R ${APP_USER}:${APP_USER} /home/appuser\
     && alias mc='EDITOR=mcedit mc'
 
 # copy core
 RUN mkdir -p /code/ackrep_core
 ADD ./ackrep_core /code/ackrep_core
-RUN chown -R ${APP_USER}:${APP_USER} /code
 
 # copy data
 RUN mkdir -p /code/ackrep_data
 # data is added per volume
-RUN chown -R ${APP_USER}:${APP_USER} /code/ackrep_data
 
 RUN mkdir -p /code/ackrep_data_for_unittests
 # data is added per volume
-RUN chown -R ${APP_USER}:${APP_USER} /code/ackrep_data_for_unittests
 
 # install ackrep
 WORKDIR /code/ackrep_core
@@ -79,14 +75,11 @@ RUN rm -f db.sqlite3
 RUN rm -f db_for_unittests.sqlite3
 RUN rm -f /code/ackrep_core/media/*
 
-# prepare transfer folder
-RUN mkdir -p /ackrep_transfer
-RUN chown -R ${APP_USER}:${APP_USER} /ackrep_transfer
 
 ADD ./ackrep_deployment/dockerfiles/ackrep_core/additional_files /code/
 ADD ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile_default_environment /code/
 
-USER ${APP_USER}:${APP_USER}
+USER root
 EXPOSE 8000
 
 

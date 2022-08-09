@@ -20,6 +20,10 @@ RUN set -ex \
     mime-support \
     lsof \
     git \
+    curl \
+    mc \
+    sudo \
+    wget \
     " \
     && seq 1 8 | xargs -I{} mkdir -p /usr/share/man/man{} \
     && apt-get update && apt-get install -y --no-install-recommends $RUN_DEPS \
@@ -28,7 +32,6 @@ RUN set -ex \
 # Copy in your requirements file
 ADD ./ackrep_core/requirements.txt /requirements.txt
 ADD ./ackrep_core/requirements_deployment.txt /requirements_deployment.txt
-ADD ./ackrep_core/requirements_celery.txt /requirements_celery.txt
 
 # OR, if you're using a directory for your requirements, copy everything (comment out the above and uncomment this if so):
 # ADD requirements /requirements
@@ -46,7 +49,6 @@ RUN set -ex \
     && pip3 install --upgrade pip \
     && pip install --no-cache-dir -r /requirements.txt \
     && pip install --no-cache-dir -r /requirements_deployment.txt \
-    && pip install --no-cache-dir -r /requirements_celery.txt \
     \
     && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false $BUILD_DEPS \
     && rm -rf /var/lib/apt/lists/*
@@ -70,6 +72,16 @@ RUN mkdir /code/ackrep_data
 # data is added per volume
 RUN chown -R ${APP_USER}:${APP_USER} /code/ackrep_data
 
+RUN set -ex \
+    && cd /code \
+    && git clone https://github.com/ackrep-org/ackrep_ci_results.git
+RUN chown -R ${APP_USER}:${APP_USER} /code/ackrep_ci_results
+
+RUN set -ex \
+    && cd /code \
+    && git clone https://github.com/ackrep-org/ackrep_fallback_binaries.git
+RUN chown -R ${APP_USER}:${APP_USER} /code/ackrep_fallback_binaries
+
 ADD ./ackrep_deployment/dockerfiles/ackrep_core/additional_files /code/
 ADD ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile /code/
 
@@ -79,6 +91,9 @@ EXPOSE 8000
 
 # Add any static environment variables needed by Django or your settings file here:
 ENV DJANGO_SETTINGS_MODULE=ackrep_core_django_settings.settings
+
+# the actuality of this file has to be ensured by deploy.py (or manually in the local case)
+ADD ./config.ini /code/config.ini
 
 # Call collectstatic (customize the following line with the minimal environment variables needed for manage.py to run):
 RUN DATABASE_URL='' python manage.py collectstatic --noinput

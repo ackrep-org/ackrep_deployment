@@ -25,8 +25,8 @@ The ackrep project consists of several components which are maintained each in t
 
 - *ackrep_deployment*
     - code for simple deployment of the functional components on a virtual server
-- *custom_settings*
-    - data used for customization and maintainance. For privacy and security reasons these settings are not published.
+- *ackrep_deployment_config*
+    - data used for customization and maintainance. For privacy and security reasons this repo is not published.
 
 <a name="directory-layout"></a>
 These components are represented by the following **directory layout**:
@@ -36,14 +36,18 @@ These components are represented by the following **directory layout**:
     │  ├── .git/
     │  ├── README.md                      ← the currently displayed file (README.md)
     │  ├── deploy.py                      ← deployment script
-    │  ├── ...
-    │  ├── custom_settings__demo          ← instance-specific settings (not included in the repo)
-    │  │   ├── settings.yml
-    │  │   └── ...
-    │  └── custom_settings__local         ← settings for local testing deployment (included for reference)
-    │      ├── settings.yml
-    │      └── ...
+    │  └── ...
     │
+    ├── ackrep_deployment_config/         ← repo with deployment code for the ackrep project
+    │  ├── README.md
+    │  ├── config_demo.ini                ← settings for public demo instance
+    │  ├── config_testing2.ini            ← settings for testing instance (for development)
+    │  └── ...
+    │
+    ├── config.ini                        ← config file which will be used by settings.py
+    │                                       On the remote server: This file is created during deployment.
+    │                                       On local testing machine: This might be absent, then the
+    │                                       example from ackrep-core will be used.
     │
     │
     ├── ackrep_data/                      ← separate repository for ackrep_data
@@ -55,6 +59,8 @@ These components are represented by the following **directory layout**:
     │  └── ...
     └── ackrep_core/                      ← separate repository for ackrep_core
        ├── .git/
+       ├── config-example.ini             ← example config file which will be used as fallback if
+       │                                     <ackrep_project_dir>/config.ini cannot be found.
        └── ...
 
 The components *ackrep_core* and *ackrep_data* are maintained in separate repositories.

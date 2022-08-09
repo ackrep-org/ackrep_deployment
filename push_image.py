@@ -13,7 +13,7 @@ from the command line
 """
 
 argparser = argparse.ArgumentParser()
-argparser.add_argument("-i", "--image", help="image name", metavar="image", default="default_environment")
+argparser.add_argument("-i", "--image", help="image name", metavar="image")
 argparser.add_argument("-v", "--version", help="version tag", metavar="version")
 argparser.add_argument("-m", "--message", help="description of version", metavar="message")
 
@@ -30,19 +30,32 @@ assert len(version.split(".")) == 3, "version tag not in the form of major.minor
 assert args.message is not None, "no message specified"
 message = args.message
 
+cmd = ["docker", "pull", f"ghcr.io/ackrep-org/{image}:{version}"]
+res = subprocess.run(cmd, text=True, capture_output=True)
+# print(res.stdout,"\n", res.stderr)
+if "Pulling from" in res.stdout:
+    print("An image with this tag already exists. Pushing will overwrite the existing image.")
+    q = input("Continue? (y|N)")
+    if q != "y":
+        exit("Aborted.")
 
 # manipulate dockerfile to write version description
 #! this assumes a lot about naming conventions
 root_path = os.path.dirname(__file__)
 dockerfile_path = os.path.join(root_path, "dockerfiles/ackrep_core", f"Dockerfile_{image}")
+assert os.path.isfile(dockerfile_path), f"Invalid image Name: {image}"
 core_version = git.Git("../ackrep_core").log(-1).replace("\n", ", ")
 deployment_version = git.Git("../ackrep_deployment").log(-1).replace("\n", ", ")
-commit_message = f"Environment Version: {version}. | " + \
+commit_message = f"{image}:{version}. | " + \
     f" Core Version: {core_version} | " + \
     f" Deployment Version: {deployment_version} | " + \
     f" Message: {message}"
-# description supports markdown syntax
 content = f'LABEL org.opencontainers.image.description "{commit_message}"'
+
+print(f"Label of Dockerfile_{image} will look like this:\n\n{commit_message}\n")
+q = input("Continue? (y|N)")
+if q != "y":
+    exit("Aborted.")
 
 with open(dockerfile_path, "r") as dockerfile:
     lines = dockerfile.readlines()
@@ -50,15 +63,15 @@ with open(dockerfile_path, "r") as dockerfile:
 with open(dockerfile_path, "a") as dockerfile:
     dockerfile.write("\n" + content)
 
-start = time.time()
 # rebuild image to incorporate description
+start = time.time()
 print("Rebuilding Image")
 res = subprocess.run(["docker-compose", "build", image])
 assert res.returncode == 0
 
-if time.time() - start > 3:
-    print("Building took longer than expected.\
-        Are you sure you were testing with the correct/ most recent image version?")
+if time.time() - start > 5:
+    print("Building took longer than expected.\n"\
+        + "Are you sure you were testing with the correct/ most recent image version?")
     q = input("Continue? (y|N)")
     if q != "y":
         # reset dockerfile
