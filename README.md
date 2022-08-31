@@ -38,7 +38,8 @@ These components are represented by the following **directory layout**:
     │  ├── deploy.py                      ← deployment script
     │  └── ...
     │
-    ├── ackrep_deployment_config/         ← repo with deployment code for the ackrep project
+    ├── ackrep_deployment_config/         ← non-public repo; deployment config data for ackrep.org;
+    │  │                                    (paths and domains but no secret keys etc.)
     │  ├── README.md
     │  ├── config_demo.ini                ← settings for public demo instance
     │  ├── config_testing2.ini            ← settings for testing instance (for development)
