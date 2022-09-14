@@ -17,7 +17,7 @@ RUN set -ex \
     && conda init bash \
     && . /root/.bashrc \
     && conda update conda \
-    && conda install python=${PYTHON_VERSION} 
+    && conda install python=${PYTHON_VERSION}
 
 ENV PATH=/opt/conda/envs/ackrep_env/bin:$PATH
 
@@ -25,8 +25,8 @@ ADD ./ackrep_core/requirements.txt /requirements.txt
 ADD ./ackrep_core/requirements_default_environment_pip.txt /requirements_default_environment_pip.txt
 ADD ./ackrep_core/requirements_default_environment_conda.txt /requirements_default_environment_conda.txt
 
-RUN pip install -r requirements.txt 
-RUN pip install -r requirements_default_environment_pip.txt 
+RUN pip install -r requirements.txt
+RUN pip install -r requirements_default_environment_pip.txt
 RUN conda install -c conda-forge --file requirements_default_environment_conda.txt
 
 RUN conda install jupyter -y
@@ -34,7 +34,9 @@ RUN conda install jupyter -y
 # qt stuff for pyinduct
 RUN set -ex \
     && apt-get update \
-    && apt-get install libgl1 -y 
+    && apt-get install libgl1 -y
+
+RUN pip uninstall scipy -y
 
 # copy core
 RUN mkdir -p /code/ackrep_core
@@ -63,6 +65,7 @@ ADD ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile_default_conda_environ
 # conda installs scipy from forge, which uses a newer version of GLIBCXX than available
 # and crashing scipy for most entities
 RUN pip install -U --no-cache-dir scipy
+ENV ACKREP_ENVIRONMENT_NAME=DEFAULT_CONDA_ENVIRONMENT
 
 USER root
 EXPOSE 8000
