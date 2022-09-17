@@ -2,7 +2,7 @@
 
 # Note: current directory (.) is specified by `context` in `docker-compose.yml`
 
-FROM python:3.7-slim
+FROM python:3.8-slim
 
 # Create a group and user to run our app
 ARG APP_USER=appuser
@@ -59,31 +59,45 @@ RUN mkdir -p /home/$APP_USER
 RUN chown ${APP_USER}:${APP_USER} /home/$APP_USER
 
 # Copy your application code to the container (make sure you create a .dockerignore file if any large files or directories should be excluded)
-RUN mkdir -p /code/ackrep_core
-ADD ./ackrep_core /code/ackrep_core
-RUN chown -R ${APP_USER}:${APP_USER} /code
-WORKDIR /code/ackrep_core
+RUN mkdir -p /code/ackrep/ackrep_core
+ADD ./ackrep_core /code/ackrep/ackrep_core
+RUN chown -R ${APP_USER}:${APP_USER} /code/ackrep
+
+
+RUN mkdir -p /code/erk/pyerk-core
+ADD ./pyerk-core /code/erk/pyerk-core
+RUN chown -R ${APP_USER}:${APP_USER} /code/erk/pyerk-core
+
+RUN mkdir -p /code/erk/erk-data
+ADD ./erk-data /code/erk/erk-data
+RUN chown -R ${APP_USER}:${APP_USER} /code/erk/erk-data
+
+# install pyerk
+WORKDIR /code/erk/pyerk-core
+RUN pip install -r requirements.txt
+RUN pip install -e .
+WORKDIR /code/ackrep/ackrep_core
 
 # ensure that we have no legacy db file lurking around from local testing
 RUN rm -f db.sqlite3
-RUN rm -f /code/ackrep_core/media/*
+RUN rm -f /code/ackrep/ackrep_core/media/*
 
-RUN mkdir /code/ackrep_data
+RUN mkdir /code/ackrep/ackrep_data
 # data is added per volume
-RUN chown -R ${APP_USER}:${APP_USER} /code/ackrep_data
+RUN chown -R ${APP_USER}:${APP_USER} /code/ackrep/ackrep_data
 
 RUN set -ex \
-    && cd /code \
+    && cd /code/ackrep \
     && git clone https://github.com/ackrep-org/ackrep_ci_results.git
-RUN chown -R ${APP_USER}:${APP_USER} /code/ackrep_ci_results
+RUN chown -R ${APP_USER}:${APP_USER} /code/ackrep/ackrep_ci_results
 
 RUN set -ex \
-    && cd /code \
+    && cd /code/ackrep \
     && git clone https://github.com/ackrep-org/ackrep_fallback_binaries.git
-RUN chown -R ${APP_USER}:${APP_USER} /code/ackrep_fallback_binaries
+RUN chown -R ${APP_USER}:${APP_USER} /code/ackrep/ackrep_fallback_binaries
 
-ADD ./ackrep_deployment/dockerfiles/ackrep_core/additional_files /code/
-ADD ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile /code/
+ADD ./ackrep_deployment/dockerfiles/ackrep_core/additional_files /code/ackrep/
+ADD ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile /code/ackrep/
 
 
 # uWSGI will listen on this port
@@ -93,7 +107,7 @@ EXPOSE 8000
 ENV DJANGO_SETTINGS_MODULE=ackrep_core_django_settings.settings
 
 # the actuality of this file has to be ensured by deploy.py (or manually in the local case)
-ADD ./config.ini /code/config.ini
+ADD ./config.ini /code/ackrep/config.ini
 
 # Call collectstatic (customize the following line with the minimal environment variables needed for manage.py to run):
 RUN DATABASE_URL='' python manage.py collectstatic --noinput
@@ -108,7 +122,7 @@ ENV UWSGI_HTTP=:8000 UWSGI_MASTER=1 UWSGI_HTTP_AUTO_CHUNKED=1 UWSGI_HTTP_KEEPALI
 ENV UWSGI_WORKERS=2 UWSGI_THREADS=4
 
 # uWSGI static file serving configuration (customize or comment out if not needed):
-ENV UWSGI_STATIC_MAP="/static/=/code/ackrep_core/static/" UWSGI_STATIC_EXPIRES_URI="/static/.*\.[a-f0-9]{12,}\.(css|js|png|jpg|jpeg|gif|ico|woff|ttf|otf|svg|scss|map|txt) 315360000"
+ENV UWSGI_STATIC_MAP="/static/=/code/ackrep/ackrep_core/static/" UWSGI_STATIC_EXPIRES_URI="/static/.*\.[a-f0-9]{12,}\.(css|js|png|jpg|jpeg|gif|ico|woff|ttf|otf|svg|scss|map|txt) 315360000"
 
 # Deny invalid hosts before they get to Django (uncomment and change to your hostname(s)):
 # ENV UWSGI_ROUTE_HOST="^(?!localhost:8000$) break:400"
@@ -117,7 +131,7 @@ ENV UWSGI_STATIC_MAP="/static/=/code/ackrep_core/static/" UWSGI_STATIC_EXPIRES_U
 USER ${APP_USER}:${APP_USER}
 
 # Uncomment after creating your docker-entrypoint.sh
-ENTRYPOINT ["/code/docker-entrypoint.sh"]
+ENTRYPOINT ["/code/ackrep/docker-entrypoint.sh"]
 
 # Start uWSGI
 CMD ["uwsgi", "--show-config"]

@@ -66,8 +66,8 @@ def main():
     # this assumes that ackrep_deployment/docker-compose.yml is already on the server
     c.chdir(target_deployment_path)
     res = c.run(f"docker ps -f name=ackrep-django -q", target_spec="both", printonly=args.no_docker)
-    if len(res.stdout) > 0:    
-        ids = res.stdout.replace("\n", " ") 
+    if len(res.stdout) > 0:
+        ids = res.stdout.replace("\n", " ")
         c.run(f"docker stop {ids}", target_spec="both", printonly=args.no_docker)
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -80,6 +80,16 @@ def main():
         # note: no trainling slash → upload the whole dir and keeping its name
         # thus the target path is always the same
         source_path = os.path.join(general_base_dir, dirname)
+        c.rsync_upload(source_path, target_base_path, target_spec="remote")
+
+    c.cprint("upload all pyerk files", target_spec="remote")
+    # upload all erk repos
+    dirnames = ["pyerk-core", "erk-data", "pyerk-django"]
+    for dirname in dirnames:
+
+        # note: no trainling slash → upload the whole dir and keeping its name
+        # thus the target path is always the same
+        source_path = os.path.join(general_base_dir, os.pardir, "erk", dirname)
         c.rsync_upload(source_path, target_base_path, target_spec="remote")
 
     c.cprint("upload and rename configfile", target_spec="remote")

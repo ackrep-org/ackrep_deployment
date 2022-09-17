@@ -19,7 +19,7 @@ services:
             - 'traefik.http.routers.ackrep-django.tls.certresolver=lets-encrypt'
         volumes:
             # this is relative to this file not to build-context
-            - ../ackrep_data:/code/ackrep_data
+            - ../ackrep_data:/code/ackrep/ackrep_data
 
         depends_on:
             - traefik
