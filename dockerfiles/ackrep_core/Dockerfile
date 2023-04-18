@@ -30,8 +30,8 @@ RUN set -ex \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy in your requirements file
-ADD ./ackrep_core/requirements.txt /requirements.txt
-ADD ./ackrep_core/requirements_deployment.txt /requirements_deployment.txt
+ADD ./ackrep/ackrep_core/requirements.txt /requirements.txt
+ADD ./ackrep/ackrep_core/requirements_deployment.txt /requirements_deployment.txt
 
 # OR, if you're using a directory for your requirements, copy everything (comment out the above and uncomment this if so):
 # ADD requirements /requirements
@@ -60,16 +60,16 @@ RUN chown ${APP_USER}:${APP_USER} /home/$APP_USER
 
 # Copy your application code to the container (make sure you create a .dockerignore file if any large files or directories should be excluded)
 RUN mkdir -p /code/ackrep/ackrep_core
-ADD ./ackrep_core /code/ackrep/ackrep_core
+ADD ./ackrep/ackrep_core /code/ackrep/ackrep_core
 RUN chown -R ${APP_USER}:${APP_USER} /code/ackrep
 
 
 RUN mkdir -p /code/erk/pyerk-core
-ADD ./pyerk-core /code/erk/pyerk-core
+ADD ./erk/pyerk-core /code/erk/pyerk-core
 RUN chown -R ${APP_USER}:${APP_USER} /code/erk/pyerk-core
 
 RUN mkdir -p /code/erk/erk-data
-ADD ./erk-data /code/erk/erk-data
+ADD ./erk/erk-data /code/erk/erk-data
 RUN chown -R ${APP_USER}:${APP_USER} /code/erk/erk-data
 
 # install pyerk
@@ -96,8 +96,8 @@ RUN set -ex \
     && git clone https://github.com/ackrep-org/ackrep_fallback_binaries.git
 RUN chown -R ${APP_USER}:${APP_USER} /code/ackrep/ackrep_fallback_binaries
 
-ADD ./ackrep_deployment/dockerfiles/ackrep_core/additional_files /code/ackrep/
-ADD ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile /code/ackrep/
+ADD ./ackrep/ackrep_deployment/dockerfiles/ackrep_core/additional_files /code/ackrep/
+ADD ./ackrep/ackrep_deployment/dockerfiles/ackrep_core/Dockerfile /code/ackrep/
 
 
 # uWSGI will listen on this port

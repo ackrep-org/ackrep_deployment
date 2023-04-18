@@ -7,8 +7,21 @@ services:
             - DJANGO_MANAGEPY_MIGRATE=on
             - DJANGO_DEVMODE=True
         build:
-            context: ..
-            dockerfile: ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile
+            # This file assume now a directory layout like
+            # <common-root>                 ← desired context directory
+            # │
+            # ├── ackrep              
+            # │   ├── ackrep_data/
+            # │   ├── ackrep_core/
+            # │   ├── ackrep_deployment/    ← assumed working directory
+            # │   │
+            # │   └── ...
+            # └── erk
+            #     ├── pyerk-core/
+            #     ├── erk_data/
+            #     └── ...
+            context: ../..
+            dockerfile: ./ackrep/ackrep_deployment/dockerfiles/ackrep_core/Dockerfile
         ports:
             - "8000:8000"
         labels:
