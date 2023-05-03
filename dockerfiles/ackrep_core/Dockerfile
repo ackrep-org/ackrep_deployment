@@ -128,7 +128,8 @@ ENV UWSGI_STATIC_MAP="/static/=/code/ackrep/ackrep_core/static/" UWSGI_STATIC_EX
 # ENV UWSGI_ROUTE_HOST="^(?!localhost:8000$) break:400"
 
 
-# TODO: move this to earlier stages
+# ---
+# TODO: move this section to earlier stages
 WORKDIR /code/ackrep/ackrep_core
 RUN pip install -e .
 
@@ -136,8 +137,9 @@ RUN pip install -e .
 USER ${APP_USER}:${APP_USER}
 
 
-# TODO: this yet produces wrong paths
+WORKDIR /code/ackrep
 RUN ackrep --bootstrap-config
+# ---
 
 # Uncomment after creating your docker-entrypoint.sh
 ENTRYPOINT ["/code/ackrep/docker-entrypoint.sh"]
