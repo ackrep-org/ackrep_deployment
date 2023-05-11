@@ -58,13 +58,17 @@ def main():
     c.cprint("stop running services (will fail in the first deployment-run)", target_spec="both")
 
 
+    # see README.md for the assumed directory structure
     # this is the dir where subdirs ackrep_core, ackrep_data, etc live
     target_base_path = config('target_path')
-    target_deployment_path = f"{target_base_path}/ackrep_deployment"
-    target_core_path = f"{target_base_path}/ackrep_core"
+    
+    ackrep_target_path = f"{target_base_path}/ackrep"
+    target_deployment_path = f"{ackrep_target_path}/ackrep_deployment"
+    target_core_path = f"{ackrep_target_path}/ackrep_core"
 
-    # this assumes that ackrep_deployment/docker-compose.yml is already on the server
+    c.run(f"mkdir -p {target_deployment_path}")
     c.chdir(target_deployment_path)
+    # this assumes that ackrep_deployment/docker-compose.yml is already on the server
     res = c.run(f"docker ps -f name=ackrep-django -q", target_spec="both", printonly=args.no_docker)
     if len(res.stdout) > 0:
         ids = res.stdout.replace("\n", " ")
@@ -76,25 +80,30 @@ def main():
 
     dirnames = ["ackrep_data", "ackrep_core", "ackrep_deployment"]
     filters = "--exclude='**/acme.json'"
+    c.run(f"mkdir -p {ackrep_target_path}")
     for dirname in dirnames:
 
         # note: no trainling slash → upload the whole dir and keeping its name
         # thus the target path is always the same
         source_path = os.path.join(general_base_dir, dirname)
-        c.rsync_upload(source_path, target_base_path, filters=filters, target_spec="remote")
+        c.rsync_upload(source_path, ackrep_target_path, filters=filters, target_spec="remote")
 
     c.cprint("upload all pyerk files", target_spec="remote")
     # upload all erk repos
     dirnames = ["pyerk-core", "erk-data", "pyerk-django"]
+    
+    erk_target_path = f"{target_base_path}/erk"
+    c.run(f"mkdir -p {erk_target_path}")
+    
     for dirname in dirnames:
 
         # note: no trainling slash → upload the whole dir and keeping its name
         # thus the target path is always the same
         source_path = os.path.join(general_base_dir, os.pardir, "erk", dirname)
-        c.rsync_upload(source_path, target_base_path, target_spec="remote")
+        c.rsync_upload(source_path, erk_target_path, target_spec="remote")
 
     c.cprint("upload and rename configfile", target_spec="remote")
-    c.rsync_upload(config.path, f"{target_base_path}/config.ini", target_spec="remote")
+    c.rsync_upload(config.path, f"{ackrep_target_path}/config.ini", target_spec="remote")
 
     # ------------------------------------------------------------------------------------------------------------------
     c.cprint("log the deployment date to file", target_spec="both")

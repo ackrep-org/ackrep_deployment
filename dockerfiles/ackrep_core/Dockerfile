@@ -107,8 +107,17 @@ EXPOSE 8000
 ENV DJANGO_SETTINGS_MODULE=ackrep_core_django_settings.settings
 
 # the actuality of this file has to be ensured by deploy.py (or manually in the local case)
-ADD ./config.ini /code/ackrep/config.ini
+ADD ./ackrep/config.ini /code/ackrep/config.ini
 
+# TODO: move this section to earlier stages
+WORKDIR /code/ackrep/ackrep_core
+RUN pip install -e .
+
+WORKDIR /code/ackrep
+RUN ackrep --bootstrap-config
+
+
+WORKDIR /code/ackrep/ackrep_core
 # Call collectstatic (customize the following line with the minimal environment variables needed for manage.py to run):
 RUN DATABASE_URL='' python manage.py collectstatic --noinput
 
@@ -129,16 +138,14 @@ ENV UWSGI_STATIC_MAP="/static/=/code/ackrep/ackrep_core/static/" UWSGI_STATIC_EX
 
 
 # ---
-# TODO: move this section to earlier stages
-WORKDIR /code/ackrep/ackrep_core
-RUN pip install -e .
 
 # Change to a non-root user
 USER ${APP_USER}:${APP_USER}
 
-
+# this has to be done again for the real user
 WORKDIR /code/ackrep
 RUN ackrep --bootstrap-config
+
 # ---
 
 # Uncomment after creating your docker-entrypoint.sh
