@@ -18,7 +18,7 @@ services:
             # │   └── ...
             # └── erk
             #     ├── pyerk-core/
-            #     ├── erk_data/
+            #     ├── erk-data/
             #     └── ...
             context: ../..
             dockerfile: ./ackrep/ackrep_deployment/dockerfiles/ackrep_core/Dockerfile
