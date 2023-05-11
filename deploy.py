@@ -75,12 +75,13 @@ def main():
     c.cprint("upload all deployment files", target_spec="remote")
 
     dirnames = ["ackrep_data", "ackrep_core", "ackrep_deployment"]
+    filters = "--exclude='**/acme.json'"
     for dirname in dirnames:
 
         # note: no trainling slash → upload the whole dir and keeping its name
         # thus the target path is always the same
         source_path = os.path.join(general_base_dir, dirname)
-        c.rsync_upload(source_path, target_base_path, target_spec="remote")
+        c.rsync_upload(source_path, target_base_path, filters=filters, target_spec="remote")
 
     c.cprint("upload all pyerk files", target_spec="remote")
     # upload all erk repos
