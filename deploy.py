@@ -21,20 +21,45 @@ import argparse
 import yaml
 import deploymentutils as du
 import time
+import yaml
 
 from ipydex import IPS, activate_ips_on_exception
 
 activate_ips_on_exception()
 
 
+def check_config_consistency(args):
+    """
+    some values are specified in multiple locations (config.ini, docker-compose.yml).
+
+    This function checks if the values are consistent
+    """
+    config = du.get_nearest_config(args.configfile)
+    with open("docker-compose.yml") as fp:
+        dc_dict = yaml.safe_load(fp)
+    labels = dc_dict["services"]["ackrep-django"]["labels"]
+    key_str = "traefik.http.routers.ackrep-django.rule"
+    relevant_label = [l for l in labels if l.startswith(key_str)][0]
+    #e.g.: 'traefik.http.routers.ackrep-django.rule=Host(`testing.ackrep.org`)'
+    part = relevant_label.split("=")[-1]
+    assert part.startswith("Host(`") and part.endswith("`)")
+    dc_domain = part[6:-2]
+
+    msg = "Domains from config file and docker-compose (traefik label) do not match. Abort"
+    assert dc_domain == config.get("url"), msg
 
 
-def main():
+def get_args():
     du.argparser.add_argument("configfile", help="path to .ini-file for configuration")
     du.argparser.add_argument("-nd", "--no-docker", help="omit docker comands", action="store_true")
     du.argparser.add_argument("--devserver", help="run development server instead", action="store_true")
 
     args = du.parse_args()
+    return args
+
+
+def main(args):
+
 
     # limit=0 -> specify path explicitly
     config = du.get_nearest_config(args.configfile)
@@ -61,7 +86,7 @@ def main():
     # see README.md for the assumed directory structure
     # this is the dir where subdirs ackrep_core, ackrep_data, etc live
     target_base_path = config('target_path')
-    
+
     ackrep_target_path = f"{target_base_path}/ackrep"
     target_deployment_path = f"{ackrep_target_path}/ackrep_deployment"
     target_core_path = f"{ackrep_target_path}/ackrep_core"
@@ -91,10 +116,10 @@ def main():
     c.cprint("upload all pyerk files", target_spec="remote")
     # upload all erk repos
     dirnames = ["pyerk-core", "erk-data", "pyerk-django"]
-    
+
     erk_target_path = f"{target_base_path}/erk"
     c.run(f"mkdir -p {erk_target_path}")
-    
+
     for dirname in dirnames:
 
         # note: no trainling slash → upload the whole dir and keeping its name
@@ -127,7 +152,9 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    args = get_args()
+    check_config_consistency(args)
+    # main(args)
 
 """
 python deploy.py remote ../ackrep_deployment_config/config_testing2.ini
