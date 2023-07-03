@@ -84,7 +84,7 @@ def main():
 
     c.cprint("upload all pyerk files", target_spec="remote")
     # upload all erk repos
-    dirnames = ["pyerk-core", "erk-data", "pyerk-django"]
+    dirnames = ["pyerk-core", "erk_data", "pyerk-django"]
     for dirname in dirnames:
 
         # note: no trainling slash → upload the whole dir and keeping its name

@@ -68,9 +68,9 @@ RUN mkdir -p /code/erk/pyerk-core
 ADD ./pyerk-core /code/erk/pyerk-core
 RUN chown -R ${APP_USER}:${APP_USER} /code/erk/pyerk-core
 
-RUN mkdir -p /code/erk/erk-data
-ADD ./erk-data /code/erk/erk-data
-RUN chown -R ${APP_USER}:${APP_USER} /code/erk/erk-data
+RUN mkdir -p /code/erk/erk_data
+ADD ./erk_data /code/erk/erk_data
+RUN chown -R ${APP_USER}:${APP_USER} /code/erk/erk_data
 
 # install pyerk
 WORKDIR /code/erk/pyerk-core
@@ -108,6 +108,8 @@ ENV DJANGO_SETTINGS_MODULE=ackrep_core_django_settings.settings
 
 # the actuality of this file has to be ensured by deploy.py (or manually in the local case)
 ADD ./config.ini /code/ackrep/config.ini
+
+RUN python -c "from ackrep_core import config_handler; config_handler.bootstrap_config_from_current_directory()"
 
 # Call collectstatic (customize the following line with the minimal environment variables needed for manage.py to run):
 RUN DATABASE_URL='' python manage.py collectstatic --noinput
