@@ -88,7 +88,7 @@ class DeploymentManager:
             msg = "local deployment is currently not supported by this script"
             raise NotImplemented(msg)
 
-        return
+
 
         c = du.StateConnection(remote_url, user=remote_user, target=args.target)
 
@@ -128,7 +128,7 @@ class DeploymentManager:
 
         c.cprint("upload all pyerk files", target_spec="remote")
         # upload all erk repos
-        dirnames = ["pyerk-core", "erk-data", "pyerk-django"]
+        dirnames = ["pyerk-core", "erk_data", "pyerk-django"]
 
         erk_target_path = f"{target_base_path}/erk"
         c.run(f"mkdir -p {erk_target_path}")

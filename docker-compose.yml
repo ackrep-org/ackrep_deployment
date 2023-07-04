@@ -10,7 +10,7 @@ services:
             # This file assume now a directory layout like
             # <common-root>                 ← desired context directory
             # │
-            # ├── ackrep              
+            # ├── ackrep
             # │   ├── ackrep_data/
             # │   ├── ackrep_core/
             # │   ├── ackrep_deployment/    ← assumed working directory
@@ -27,7 +27,7 @@ services:
         labels:
             - 'traefik.enable=true'
             #- 'traefik.http.routers.ackrep-django.rule=Host(`ackrep.localhost`)'
-            - 'traefik.http.routers.ackrep-django.rule=Host(`testing.ackrep.org`)'
+            - 'traefik.http.routers.ackrep-django.rule=Host(`testing2.ackrep.org`)'
             - 'traefik.http.routers.ackrep-django.tls=true'
             - 'traefik.http.routers.ackrep-django.tls.certresolver=lets-encrypt'
         volumes:

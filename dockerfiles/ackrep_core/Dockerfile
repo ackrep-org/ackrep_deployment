@@ -68,9 +68,9 @@ RUN mkdir -p /code/erk/pyerk-core
 ADD ./erk/pyerk-core /code/erk/pyerk-core
 RUN chown -R ${APP_USER}:${APP_USER} /code/erk/pyerk-core
 
-RUN mkdir -p /code/erk/erk-data
-ADD ./erk/erk-data /code/erk/erk-data
-RUN chown -R ${APP_USER}:${APP_USER} /code/erk/erk-data
+RUN mkdir -p /code/erk/erk_data
+ADD ./erk/erk_data /code/erk/erk_data
+RUN chown -R ${APP_USER}:${APP_USER} /code/erk/erk_data
 
 # install pyerk
 WORKDIR /code/erk/pyerk-core
