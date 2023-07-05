@@ -39,24 +39,24 @@ RUN set -ex \
 RUN pip uninstall scipy -y
 
 # copy core
-RUN mkdir -p /code/ackrep_core
-ADD ./ackrep_core /code/ackrep_core
+RUN mkdir -p /code/ackrep/ackrep_core
+ADD ./ackrep_core /code/ackrep/ackrep_core
 
 # copy data
-RUN mkdir -p /code/ackrep_data
+RUN mkdir -p /code/ackrep/ackrep_data
 # data is added per volume
 
-RUN mkdir -p /code/ackrep_data_for_unittests
+RUN mkdir -p /code/ackrep/ackrep_data_for_unittests
 # data is added per volume
 
 # install ackrep
-WORKDIR /code/ackrep_core
+WORKDIR /code/ackrep/ackrep_core
 RUN pip install -e .
 
 # ensure that we have no legacy db file lurking around from local testing
 RUN rm -f db.sqlite3
 RUN rm -f db_for_unittests.sqlite3
-RUN rm -f /code/ackrep_core/media/*
+RUN rm -f /code/ackrep/ackrep_core/media/*
 
 
 ADD ./ackrep_deployment/dockerfiles/ackrep_core/additional_files /code/
@@ -67,6 +67,19 @@ ADD ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile_default_conda_environ
 RUN pip install -U --no-cache-dir scipy
 ENV ACKREP_ENVIRONMENT_NAME=DEFAULT_CONDA_ENVIRONMENT
 
+# place config at right places: root for entrypoint script, appuser for normal use
+WORKDIR /code/ackrep
+# this command is run as root
+RUN ackrep --bootstrap-config
+
+# since for some reason running --bootstrap-config as appuser is not permitted, we just copy the file
+RUN mkdir -p /home/appuser/.config/ackrep
+RUN cp -R /root/.config/ackrep/* /home/${APP_USER}/.config/ackrep/
+
+# check if it worked as expected
+# RUN cat /home/appuser/.config/ackrep/ackrepconf.toml
+
+WORKDIR /code/ackrep/ackrep_core
 USER root
 EXPOSE 8000
 EXPOSE 8888

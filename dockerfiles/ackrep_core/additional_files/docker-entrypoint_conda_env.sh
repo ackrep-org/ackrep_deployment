@@ -22,13 +22,13 @@ python manage.py migrate --noinput --run-syncdb >/dev/null
 if [[ $ACKREP_DATABASE_PATH == *"unittest"* ]]
 then
     echo "loading unittest repo"
-    python -c "from ackrep_core import core; core.load_repo_to_db('/code/ackrep_data_for_unittests')" #>/dev/null
-    chown $HOST_UID:$HOST_UID /code/ackrep_core/db_for_unittests.sqlite3
+    python -c "from ackrep_core import core; core.load_repo_to_db('/code/ackrep/ackrep_data_for_unittests')" #>/dev/null
+    chown $HOST_UID:$HOST_UID /code/ackrep/ackrep_core/db_for_unittests.sqlite3
 elif [[ $ACKREP_DATABASE_PATH == *"db"* ]]
 then
     # echo "loading data repo"
-    python -c "from ackrep_core import core; core.load_repo_to_db('/code/ackrep_data')" >/dev/null
-    chown $HOST_UID:$HOST_UID /code/ackrep_core/db.sqlite3
+    python -c "from ackrep_core import core; core.load_repo_to_db('/code/ackrep/ackrep_data')" >/dev/null
+    chown $HOST_UID:$HOST_UID /code/ackrep/ackrep_core/db.sqlite3
 else
     echo "no db path specified, no db loaded"
 fi
