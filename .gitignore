@@ -1,3 +1,10 @@
 custom_settings__*
 .idea/*
 traefik/acme.json
+.vscode/
+
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
