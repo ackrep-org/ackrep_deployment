@@ -30,8 +30,8 @@ RUN set -ex \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy in your requirements file
-ADD ./ackrep_core/requirements.txt /requirements.txt
-ADD ./ackrep_core/requirements_deployment.txt /requirements_deployment.txt
+ADD ./ackrep/ackrep_core/requirements.txt /requirements.txt
+ADD ./ackrep/ackrep_core/requirements_deployment.txt /requirements_deployment.txt
 
 # OR, if you're using a directory for your requirements, copy everything (comment out the above and uncomment this if so):
 # ADD requirements /requirements
@@ -60,16 +60,16 @@ RUN chown ${APP_USER}:${APP_USER} /home/$APP_USER
 
 # Copy your application code to the container (make sure you create a .dockerignore file if any large files or directories should be excluded)
 RUN mkdir -p /code/ackrep/ackrep_core
-ADD ./ackrep_core /code/ackrep/ackrep_core
+ADD ./ackrep/ackrep_core /code/ackrep/ackrep_core
 RUN chown -R ${APP_USER}:${APP_USER} /code/ackrep
 
 
 RUN mkdir -p /code/erk/pyerk-core
-ADD ./pyerk-core /code/erk/pyerk-core
+ADD ./erk/pyerk-core /code/erk/pyerk-core
 RUN chown -R ${APP_USER}:${APP_USER} /code/erk/pyerk-core
 
 RUN mkdir -p /code/erk/erk_data
-ADD ./erk_data /code/erk/erk_data
+ADD ./erk/erk_data /code/erk/erk_data
 RUN chown -R ${APP_USER}:${APP_USER} /code/erk/erk_data
 
 # install pyerk
@@ -96,8 +96,8 @@ RUN set -ex \
     && git clone https://github.com/ackrep-org/ackrep_fallback_binaries.git
 RUN chown -R ${APP_USER}:${APP_USER} /code/ackrep/ackrep_fallback_binaries
 
-ADD ./ackrep_deployment/dockerfiles/ackrep_core/additional_files /code/ackrep/
-ADD ./ackrep_deployment/dockerfiles/ackrep_core/Dockerfile /code/ackrep/
+ADD ./ackrep/ackrep_deployment/dockerfiles/ackrep_core/additional_files /code/ackrep/
+ADD ./ackrep/ackrep_deployment/dockerfiles/ackrep_core/Dockerfile /code/ackrep/
 
 
 # uWSGI will listen on this port
@@ -107,15 +107,22 @@ EXPOSE 8000
 ENV DJANGO_SETTINGS_MODULE=ackrep_core_django_settings.settings
 
 # the actuality of this file has to be ensured by deploy.py (or manually in the local case)
-ADD ./config.ini /code/ackrep/config.ini
+ADD ./ackrep/config.ini /code/ackrep/config.ini
 
-RUN python -c "from ackrep_core import config_handler; config_handler.bootstrap_config_from_current_directory()"
+# TODO: move this section to earlier stages
+WORKDIR /code/ackrep/ackrep_core
+RUN pip install -e .
 
+WORKDIR /code/ackrep
+RUN ackrep --bootstrap-config
+
+
+WORKDIR /code/ackrep/ackrep_core
 # Call collectstatic (customize the following line with the minimal environment variables needed for manage.py to run):
 RUN DATABASE_URL='' python manage.py collectstatic --noinput
 
 # Tell uWSGI where to find your wsgi file (change this):
-ENV UWSGI_WSGI_FILE=ackrep_core_django_settings/wsgi.py
+ENV UWSGI_WSGI_FILE=/code/ackrep/ackrep_core/ackrep_core_django_settings/wsgi.py
 
 # Base uWSGI configuration (you shouldn't need to change these):
 ENV UWSGI_HTTP=:8000 UWSGI_MASTER=1 UWSGI_HTTP_AUTO_CHUNKED=1 UWSGI_HTTP_KEEPALIVE=1 UWSGI_LAZY_APPS=1 UWSGI_WSGI_ENV_BEHAVIOR=holy
@@ -129,8 +136,17 @@ ENV UWSGI_STATIC_MAP="/static/=/code/ackrep/ackrep_core/static/" UWSGI_STATIC_EX
 # Deny invalid hosts before they get to Django (uncomment and change to your hostname(s)):
 # ENV UWSGI_ROUTE_HOST="^(?!localhost:8000$) break:400"
 
+
+# ---
+
 # Change to a non-root user
 USER ${APP_USER}:${APP_USER}
+
+# this has to be done again for the real user
+WORKDIR /code/ackrep
+RUN ackrep --bootstrap-config
+
+# ---
 
 # Uncomment after creating your docker-entrypoint.sh
 ENTRYPOINT ["/code/ackrep/docker-entrypoint.sh"]
