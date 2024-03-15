@@ -2,7 +2,7 @@
 
 # Note: current directory (.) is specified by `context` in `docker-compose.yml`
 
-FROM python:3.8-slim
+FROM python:3.11-slim
 
 # Create a group and user to run our app
 ARG APP_USER=appuser
@@ -64,16 +64,16 @@ ADD ./ackrep/ackrep_core /code/ackrep/ackrep_core
 RUN chown -R ${APP_USER}:${APP_USER} /code/ackrep
 
 
-RUN mkdir -p /code/erk/pyerk-core
-ADD ./erk/pyerk-core /code/erk/pyerk-core
-RUN chown -R ${APP_USER}:${APP_USER} /code/erk/pyerk-core
+RUN mkdir -p /code/irk/pyirk-core
+ADD ./irk/pyirk-core /code/irk/pyirk-core
+RUN chown -R ${APP_USER}:${APP_USER} /code/irk/pyirk-core
 
-RUN mkdir -p /code/erk/erk_data
-ADD ./erk/erk_data /code/erk/erk_data
-RUN chown -R ${APP_USER}:${APP_USER} /code/erk/erk_data
+RUN mkdir -p /code/irk/irk_data
+ADD ./irk/irk_data /code/irk/irk_data
+RUN chown -R ${APP_USER}:${APP_USER} /code/irk/irk_data
 
-# install pyerk
-WORKDIR /code/erk/pyerk-core
+# install pyirk
+WORKDIR /code/irk/pyirk-core
 RUN pip install -r requirements.txt
 RUN pip install -e .
 WORKDIR /code/ackrep/ackrep_core

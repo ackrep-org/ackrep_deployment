@@ -20,7 +20,7 @@ The ackrep project consists of several components which are maintained each in t
 - (*[ackrep_web](https://github.com/cknoll/ackrep_core/tree/main/ackrep_web)*)
     - code for the web front-end
     - currently still part of ackrep_core
-- *[pyerk-core](https://github.com/ackrep-org/pyerk-core)*
+- *[pyirk-core](https://github.com/ackrep-org/pyirk-core)*
     - (experimental) tool for symbolic knowledge representation
 - *[ocse](https://github.com/ackrep-org/ocse)*
     - ontology of control engineering
@@ -39,7 +39,7 @@ These components are represented in the following **directory layout**:
 
     <common-root>                 ← desired context directory
     │
-    ├── ackrep              
+    ├── ackrep
     │   ├── ackrep_data/...
     │   ├── ackrep_data_for_unittests/    ← expected to be a clone/copy of ackrep_data
     │   │                                   (must be created manually)
@@ -50,24 +50,24 @@ These components are represented in the following **directory layout**:
     │   ├── ackrep_deployment/            ← assumed working directory
     │   │   ├── README.md                 ← the currently displayed file (README.md)
     │   │   ├── deploy.py                 ← deployment script
-    │   │   └── ...                       
+    │   │   └── ...
     │   ├── ackrep_deployment_config/     ← repo with deployment code for the ackrep project
     │   │   ├── config_demo.ini           ← settings for public demo instance
     │   │   ├── config_testing2.ini       ← settings for testing instance (for development)
-    │   │   └── ...                       
-    │   │                                 
+    │   │   └── ...
+    │   │
     │   ├── config.ini                    ← config file which will be used by settings.py
     │   │                                   On the remote server: This file is created during deployment.
     │   │                                   On local testing machine: This might be absent, then the
     │   │                                   example from ackrep-core will be used.
     │   └── ...
-    └── erk
-        ├── pyerk-core/
-        ├── erk-data/
+    └── irk
+        ├── pyirk-core/
+        ├── irk-data/
         │   ├── ocse                      ← repo of the ontology of control systems engineering
-        │   │   ├── erkpackage.toml           
+        │   │   ├── irkpackage.toml
         │   │   └── ...
-        │   └──...                       
+        │   └──...
         └── ...
 ```
 

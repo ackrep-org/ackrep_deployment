@@ -33,11 +33,11 @@ activate_ips_on_exception()
 # see README.md for assumed directory layout
 local_deployment_files_base_dir = du.get_dir_of_this_file()
 
-# this is the common root of ackrep/ and erk/
+# this is the common root of ackrep/ and irk/
 local_general_base_dir = os.path.dirname(os.path.dirname(local_deployment_files_base_dir))
 
 local_ackrep_base_dir = os.path.join(local_general_base_dir, "ackrep")
-local_erk_base_dir = os.path.join(local_general_base_dir, "erk")
+local_irk_base_dir = os.path.join(local_general_base_dir, "irk")
 
 
 class DeploymentManager:
@@ -126,19 +126,19 @@ class DeploymentManager:
             source_path = os.path.join(local_ackrep_base_dir, dirname)
             c.rsync_upload(source_path, ackrep_target_path, filters=filters, target_spec="remote")
 
-        c.cprint("upload all pyerk files", target_spec="remote")
-        # upload all erk repos
-        dirnames = ["pyerk-core", "erk_data", "pyerk-django"]
+        c.cprint("upload all pyirk files", target_spec="remote")
+        # upload all irk repos
+        dirnames = ["pyirk-core", "irk_data", "pyirk-django"]
 
-        erk_target_path = f"{target_base_path}/erk"
-        c.run(f"mkdir -p {erk_target_path}")
+        irk_target_path = f"{target_base_path}/irk"
+        c.run(f"mkdir -p {irk_target_path}")
 
         for dirname in dirnames:
 
             # note: no trainling slash → upload the whole dir and keeping its name
             # thus the target path is always the same
-            source_path = os.path.join(local_erk_base_dir, dirname)
-            c.rsync_upload(source_path, erk_target_path, target_spec="remote")
+            source_path = os.path.join(local_irk_base_dir, dirname)
+            c.rsync_upload(source_path, irk_target_path, target_spec="remote")
 
         c.cprint("upload and rename configfile", target_spec="remote")
         c.rsync_upload(self.config.path, f"{ackrep_target_path}/config.ini", target_spec="remote")
@@ -176,5 +176,6 @@ if __name__ == "__main__":
     drm.generate_report(f"{local_ackrep_base_dir}/ackrep_deployment_reports")
 
 """
+make sure to adapt the url in line 30 of docker-compose.yml and in ackrep_deployment_config/config_testing2.ini
 python deploy.py remote ../ackrep_deployment_config/config_testing2.ini
 """

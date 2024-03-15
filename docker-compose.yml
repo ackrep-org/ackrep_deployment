@@ -16,9 +16,9 @@ services:
             # │   ├── ackrep_deployment/    ← assumed working directory
             # │   │
             # │   └── ...
-            # └── erk
-            #     ├── pyerk-core/
-            #     ├── erk-data/
+            # └── irk
+            #     ├── pyirk-core/
+            #     ├── irk-data/
             #     └── ...
             context: ../..
             dockerfile: ./ackrep/ackrep_deployment/dockerfiles/ackrep_core/Dockerfile
@@ -27,7 +27,7 @@ services:
         labels:
             - 'traefik.enable=true'
             #- 'traefik.http.routers.ackrep-django.rule=Host(`ackrep.localhost`)'
-            - 'traefik.http.routers.ackrep-django.rule=Host(`testing2.ackrep.org`)'
+            - 'traefik.http.routers.ackrep-django.rule=Host(`testing.ackrep.org`)'
             - 'traefik.http.routers.ackrep-django.tls=true'
             - 'traefik.http.routers.ackrep-django.tls.certresolver=lets-encrypt'
         volumes:
