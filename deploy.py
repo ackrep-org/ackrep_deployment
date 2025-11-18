@@ -57,7 +57,7 @@ class DeploymentManager:
         labels = dc_dict["services"]["ackrep-django"]["labels"]
         key_str = "traefik.http.routers.ackrep-django.rule"
         relevant_label = [l for l in labels if l.startswith(key_str)][0]
-        #e.g.: 'traefik.http.routers.ackrep-django.rule=Host(`testing.ackrep.org`)'
+        # e.g.: 'traefik.http.routers.ackrep-django.rule=Host(`testing.ackrep.org`)'
         part = relevant_label.split("=")[-1]
         assert part.startswith("Host(`") and part.endswith("`)")
         dc_domain = part[6:-2]
@@ -65,14 +65,67 @@ class DeploymentManager:
         msg = "Domains from config file and docker-compose (traefik label) do not match. Abort"
         assert dc_domain == self.config.get("url"), msg
 
-
     def get_args(self):
         du.argparser.add_argument("configfile", help="path to .ini-file for configuration")
         du.argparser.add_argument("-nd", "--no-docker", help="omit docker commands", action="store_true")
         du.argparser.add_argument("--devserver", help="run development server instead", action="store_true")
+        du.argparser.add_argument(
+            "--initial-setup", help="initialize freshly installed server", action="store_true"
+        )
 
         args = du.parse_args()
         return args
+
+    def initial_setup(self, args):
+        """
+        install basic tooling on new server (preparation for following steps and manual handling)
+
+        """
+
+        assert args.target == "remote"
+
+        # ------------------------------------------------------------------------------------------------------------------
+
+
+        remote_url = self.config("url")
+        remote_user = self.config("user")
+
+        c = du.StateConnection(remote_url, user=remote_user, target=args.target)
+        c.run(f"mkdir -p ~/tmp")
+        c.run(f"mkdir -p ~/bin")
+        c.chdir("~/tmp")
+        c.run(f"curl  https://starship.rs/install.sh > install_starship.sh")
+        c.run(f"sh install_starship.sh --bin-dir ~/bin --yes")
+
+
+        bashrc_content = \
+        r"""
+        # make bash autocomplete with up/down arrow if in interactive mode
+        if [ -t 1 ]
+        then
+            bind '"\e[A":history-search-backward'
+            bind '"\e[B":history-search-forward'
+        fi
+
+        export EDITOR=mcedit
+        export VISUAL=mcedit
+
+        eval "$(~/bin/starship init bash)"
+        """
+
+
+        c.string_to_file(bashrc_content, "~/.bashrc", mode=">>")
+
+        c.run(f"sudo apt update && sudo apt upgrade -y")
+        c.run(f"apt install --assume-yes tmux rsync")
+
+        # midnight commander with lynx like motion
+        c.run(f"apt install --assume-yes mc")
+        c.run(f"mkdir -p ~/.config/mc")
+        # trailing slash at source is important
+
+        # TODO: this might require manual confirmation of remote fingerprint
+        c.rsync_upload("aux_config_files/mc/", "~/.config/mc", "remote")
 
     def main(self):
 
@@ -89,13 +142,15 @@ class DeploymentManager:
             msg = "local deployment is currently not supported by this script"
             raise NotImplemented(msg)
 
-
-
         c = du.StateConnection(remote_url, user=remote_user, target=args.target)
+
+        if args.initial_setup:
+            self.initial_setup(args)
+            IPS()
+            exit()
 
         # ------------------------------------------------------------------------------------------------------------------
         c.cprint("stop running services (will fail in the first deployment-run)", target_spec="both")
-
 
         # see README.md for the assumed directory structure
         # this is the dir where subdirs ackrep_core, ackrep_data, etc live
@@ -148,10 +203,8 @@ class DeploymentManager:
         c.cprint("log the deployment date to file", target_spec="both")
         c.chdir(target_core_path)
 
-
         pycmd = "import time; print(time.strftime(r'%Y-%m-%d %H:%M:%S'))"
         c.run(f'''python3 -c "{pycmd}" > deployment_date.txt''', target_spec="remote")
-
 
         # ------------------------------------------------------------------------------------------------------------------
         c.cprint("rebuild and restart the services", target_spec="both")

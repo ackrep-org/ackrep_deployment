@@ -58,6 +58,7 @@ class DeploymentReportManager:
         except git.InvalidGitRepositoryError:
                 return None
         branch = repo.active_branch.name
+        # TODO: make more robust:the following command fails if the repo has no commits
         last_commit_hash = repo.git.rev_parse("HEAD", short=True)
         last_commit_timestamp = repo.head.commit.committed_date
         last_commit_datetime = datetime.fromtimestamp(last_commit_timestamp)
