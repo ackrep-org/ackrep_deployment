@@ -7,11 +7,12 @@ This script does the following:
 - restart remote services
 
 
-unlock sshkey for 10 minutes
+unlock ssh key for 10 minutes
 eval $(ssh-agent); ssh-add -t 10m
 
-working command:
+working commands:
 python deploy.py remote ../ackrep_deployment_config/config_testing2.ini
+python deploy.py remote ../ackrep_deployment_config/config_testing.ini
 """
 
 from math import fabs
@@ -67,7 +68,7 @@ class DeploymentManager:
 
     def get_args(self):
         du.argparser.add_argument("configfile", help="path to .ini-file for configuration")
-        du.argparser.add_argument("-nd", "--no-docker", help="omit docker comands", action="store_true")
+        du.argparser.add_argument("-nd", "--no-docker", help="omit docker commands", action="store_true")
         du.argparser.add_argument("--devserver", help="run development server instead", action="store_true")
 
         args = du.parse_args()
@@ -121,7 +122,7 @@ class DeploymentManager:
         c.run(f"mkdir -p {ackrep_target_path}")
         for dirname in dirnames:
 
-            # note: no trainling slash → upload the whole dir and keeping its name
+            # note: no trailing slash → upload the whole dir and keeping its name
             # thus the target path is always the same
             source_path = os.path.join(local_ackrep_base_dir, dirname)
             c.rsync_upload(source_path, ackrep_target_path, filters=filters, target_spec="remote")
@@ -135,7 +136,7 @@ class DeploymentManager:
 
         for dirname in dirnames:
 
-            # note: no trainling slash → upload the whole dir and keeping its name
+            # note: no trailing slash → upload the whole dir and keeping its name
             # thus the target path is always the same
             source_path = os.path.join(local_irk_base_dir, dirname)
             c.rsync_upload(source_path, irk_target_path, target_spec="remote")
@@ -167,7 +168,7 @@ if __name__ == "__main__":
     dm = DeploymentManager()
     drm = DeploymentReportManager(root_path=local_general_base_dir, config=dm.config)
     if dirty_repos := drm.get_dirty_repos():
-        print(du.yellow("The following repos have uncommited changes:"))
+        print(du.yellow("The following repos have uncommitted changes:"))
         for r in dirty_repos:
             print(f"    - {r}")
     dm.check_config_consistency()
