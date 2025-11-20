@@ -12,12 +12,11 @@ RUN groupadd -r ${APP_USER} && useradd --no-log-init -r -g ${APP_USER} ${APP_USE
 # RUN echo 'root:Docker!' | chpasswd
 
 # Install packages needed to run your application (not build deps):
-#   mime-support -- for mime types when serving static files
+#   mime-support -- for mime types when serving static files -> removed 2025-11, no installation candidate
 # We need to recreate the /usr/share/man/man{1..8} directories first because
 # they were clobbered by a parent image.
 RUN set -ex \
     && RUN_DEPS=" \
-    mime-support \
     lsof \
     git \
     curl \

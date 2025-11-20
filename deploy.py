@@ -145,10 +145,16 @@ class DeploymentManager:
         # Add the repository to Apt sources:
         c.run("sudo apt update")
 
+
+        # new go-based compose plugin for docker
         c.run(
             "apt install --assume-yes "
             "docker-ce docker-ce-cli docker-ce-rootless-extras docker-compose-plugin"
         )
+
+        # old (python based docker-compose)
+        # c.run("apt install --assume-yes docker-buildx  docker-cli docker-compose")
+        # c.run("systemctl start docker")
 
     def main(self):
 
@@ -233,11 +239,11 @@ class DeploymentManager:
         c.cprint("rebuild and restart the services", target_spec="both")
 
         c.chdir(target_deployment_path)
-        c.run("docker-compose build ackrep-django", target_spec="remote", printonly=args.no_docker)
+        c.run("docker compose build ackrep-django", target_spec="remote", printonly=args.no_docker)
         if run_devserver:
-            print("now run:\ndocker-compose run -p 8000:8000 ackrep-django python3 manage.py runserver 0.0.0.0:8000\nin ssh shell")
+            print("now run:\ndocker compose run -p 8000:8000 ackrep-django python3 manage.py runserver 0.0.0.0:8000\nin ssh shell")
         else:
-            c.run("docker-compose up -d ackrep-django", target_spec="remote", printonly=args.no_docker)
+            c.run("docker compose up -d ackrep-django", target_spec="remote", printonly=args.no_docker)
 
 
 if __name__ == "__main__":
