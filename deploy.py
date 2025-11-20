@@ -19,11 +19,11 @@ from math import fabs
 import sys
 import os
 import argparse
+import time
+from textwrap import dedent
+
 import yaml
 import deploymentutils as du
-import time
-import yaml
-
 from util.deployment_report import DeploymentReportManager
 
 from ipydex import IPS, activate_ips_on_exception
@@ -86,7 +86,6 @@ class DeploymentManager:
 
         # ------------------------------------------------------------------------------------------------------------------
 
-
         remote_url = self.config("url")
         remote_user = self.config("user")
 
@@ -96,7 +95,6 @@ class DeploymentManager:
         c.chdir("~/tmp")
         c.run(f"curl  https://starship.rs/install.sh > install_starship.sh")
         c.run(f"sh install_starship.sh --bin-dir ~/bin --yes")
-
 
         bashrc_content = \
         r"""
@@ -113,7 +111,6 @@ class DeploymentManager:
         eval "$(~/bin/starship init bash)"
         """
 
-
         c.string_to_file(bashrc_content, "~/.bashrc", mode=">>")
 
         c.run(f"sudo apt update && sudo apt upgrade -y")
@@ -126,6 +123,32 @@ class DeploymentManager:
 
         # TODO: this might require manual confirmation of remote fingerprint
         c.rsync_upload("aux_config_files/mc/", "~/.config/mc", "remote")
+
+        # Add Docker's official GPG key:
+        c.run("apt install ca-certificates curl")
+        c.run("install -m 0755 -d /etc/apt/keyrings")
+        c.run("curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc")
+        c.run("chmod a+r /etc/apt/keyrings/docker.asc")
+
+        version_codename = c.run('echo $(. /etc/os-release && echo "$VERSION_CODENAME")').stdout.strip()
+        sources_list_content = dedent(
+        f"""
+        Types: deb
+        URIs: https://download.docker.com/linux/debian
+        Suites: {version_codename}
+        Components: stable
+        Signed-By: /etc/apt/keyrings/docker.asc
+        """)
+
+        c.string_to_file(sources_list_content, "/etc/apt/sources.list.d/docker.sources", mode=">")
+
+        # Add the repository to Apt sources:
+        c.run("sudo apt update")
+
+        c.run(
+            "apt install --assume-yes "
+            "docker-ce docker-ce-cli docker-ce-rootless-extras docker-compose-plugin"
+        )
 
     def main(self):
 
