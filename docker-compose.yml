@@ -40,7 +40,7 @@ services:
 
     traefik:
         container_name: traefik
-        image: traefik:2.1
+        image: traefik:3.6.1
         # restart manually if needed
         restart: "no"
         ports:
@@ -49,4 +49,3 @@ services:
         volumes:
             - ./traefik:/etc/traefik
             - /var/run/docker.sock:/var/run/docker.sock:ro
-

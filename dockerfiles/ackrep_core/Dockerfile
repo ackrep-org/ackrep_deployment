@@ -23,6 +23,7 @@ RUN set -ex \
     mc \
     sudo \
     wget \
+    media-types \
     " \
     && seq 1 8 | xargs -I{} mkdir -p /usr/share/man/man{} \
     && apt-get update && apt-get install -y --no-install-recommends $RUN_DEPS \
@@ -82,7 +83,8 @@ RUN rm -f db.sqlite3
 RUN rm -f /code/ackrep/ackrep_core/media/*
 
 RUN mkdir /code/ackrep/ackrep_data
-# data is added per volume
+# data is added per volume (see docker-compose.yml)
+# reason: we do not want to rebuild the container every time the data changes
 RUN chown -R ${APP_USER}:${APP_USER} /code/ackrep/ackrep_data
 
 RUN set -ex \
@@ -110,6 +112,7 @@ ADD ./ackrep/config.ini /code/ackrep/config.ini
 
 # TODO: move this section to earlier stages
 WORKDIR /code/ackrep/ackrep_core
+RUN pip install -r requirements.txt
 RUN pip install -e .
 
 WORKDIR /code/ackrep

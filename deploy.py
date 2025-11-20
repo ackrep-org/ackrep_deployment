@@ -72,10 +72,27 @@ class DeploymentManager:
         du.argparser.add_argument(
             "--initial-setup", help="initialize freshly installed server", action="store_true"
         )
+        du.argparser.add_argument(
+            "--debug", help="run debug function for interactive debugging ", action="store_true"
+        )
 
         args = du.parse_args()
         return args
 
+    def debug(self, args):
+        assert args.target == "remote"
+        remote_url = self.config("url")
+        remote_user = self.config("user")
+        c = du.StateConnection(remote_url, user=remote_user, target=args.target)
+
+        # /root/deployment_files/ackrep_deployment_repos/ackrep/ackrep_deployment
+        c.rsync_download(
+            source="/root/deployment_files/ackrep_deployment_repos/ackrep/ackrep_deployment/_tmp_remote.txt",
+            dest=os.path.abspath("./_tmp_remote.txt"),
+            target_spec="remote",
+        )
+
+        IPS()
     def initial_setup(self, args):
         """
         install basic tooling on new server (preparation for following steps and manual handling)
@@ -145,7 +162,6 @@ class DeploymentManager:
         # Add the repository to Apt sources:
         c.run("sudo apt update")
 
-
         # new go-based compose plugin for docker
         c.run(
             "apt install --assume-yes "
@@ -173,7 +189,10 @@ class DeploymentManager:
 
         c = du.StateConnection(remote_url, user=remote_user, target=args.target)
 
-        if args.initial_setup:
+        if args.debug:
+            self.debug(args)
+            exit()
+        elif args.initial_setup:
             self.initial_setup(args)
             IPS()
             exit()
@@ -210,6 +229,9 @@ class DeploymentManager:
             # thus the target path is always the same
             source_path = os.path.join(local_ackrep_base_dir, dirname)
             c.rsync_upload(source_path, ackrep_target_path, filters=filters, target_spec="remote")
+
+
+        # TODO we might want to run `git clean -fd` inside ackrep_data (to be more robust)
 
         c.cprint("upload all pyirk files", target_spec="remote")
         # upload all irk repos
